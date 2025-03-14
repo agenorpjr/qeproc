@@ -1,0 +1,204 @@
+'use client';
+
+import { DataTable, type DataTableSortStatus } from 'mantine-datatable';
+import sortBy from 'lodash/sortBy';
+import { useEffect, useState } from 'react';
+import { deleteDraftById, deleteDraftProduct, getDrafts, getDraftsProducts } from '@/lib/orders/getOrderData';
+import { redirect } from 'next/navigation';
+import { useSession } from 'next-auth/react';
+import dayjs from 'dayjs';
+import { ActionIcon, Box, Button, Card, Divider, Flex, Grid, Group, Modal, Stack, Table, Text, Title } from '@mantine/core';
+
+import classes from './drafts.module.css'
+import { IconEdit, IconEye, IconTrash } from '@tabler/icons-react';
+import { useDisclosure } from '@mantine/hooks';
+
+export type Draft = {
+  draft_id: number;
+  draft_number: number,
+  company_id: number,
+  delivery_address: string,
+  cost_center_id: number,
+  projetct_id: number,
+  created_at: string,
+  delivery_at: string,
+  draft_status: string,
+  companies: string,
+  draft_products_list: []
+}
+
+export default function DraftPage() {
+  const { data: session } = useSession()
+  if (session?.user?.role === "admin") {
+    redirect("/admin")
+  }
+
+  const [sortStatus, setSortStatus] = useState<DataTableSortStatus<Draft>>({
+    columnAccessor: 'draft_number',
+    direction: 'desc',
+  });
+  const [modalDelete, { open, close }] = useDisclosure(false)
+  const [draftsData, setDraftsData] = useState<Draft>([])
+  const [records, setRecords] = useState(sortBy(draftsData, 'draft_id'));
+  const [draftTemp, setDraftTemp] = useState(null)
+
+  useEffect(() => {
+    const drafts = async () => {
+      try {
+        const res = await getDrafts(session?.user?.user_id)
+        setDraftsData(res)
+        const data = sortBy(res, sortStatus.columnAccessor) as Draft[];
+        setRecords(sortStatus.direction === 'desc' ? data.reverse() : data);
+      } catch (err) { }
+    }
+    drafts()
+  }, [sortStatus]);
+
+  const deleteDraft = async (datadeletedraft: any) => {
+    const gdp = await getDraftsProducts(datadeletedraft)
+    const delprods = gdp.map(async (res) => {
+      await deleteDraftProduct(res.draft_product_list_id)
+    })
+
+    const res = await deleteDraftById(datadeletedraft)
+    updateDrafts()
+  }
+
+  const updateDrafts = async () => {
+    try {
+      const res = await getDrafts(session?.user?.user_id)
+      setDraftsData(res)
+      const data = sortBy(res, sortStatus.columnAccessor) as Draft[];
+      setRecords(sortStatus.direction === 'desc' ? data.reverse() : data);
+    } catch (err) { }
+  }
+
+  return (
+    <>
+      <Flex justify='flex-start'><Title order={2} mb={20} className={classes.title}>Solicitações</Title></Flex>
+
+      <DataTable
+        withTableBorder
+        withColumnBorders
+        records={records}
+        columns={[
+          { accessor: 'draft_number', width: '5%', sortable: true, title: "Solicitação nº" },
+          { accessor: 'companies.company', width: '25%', title: "Empresa", sortable: true },
+          { accessor: 'delivery_address', width: '35%', title: "Endereço de Entrega" },
+          {
+            accessor: 'delivery_at',
+            textAlign: 'right',
+            sortable: true,
+            width: '15%',
+            title: "Data de Entrega",
+            render: ({ delivery_at }) => dayjs(delivery_at).format("DD/MM/YYYY")
+          },
+          {
+            accessor: 'created_at',
+            textAlign: 'right',
+            sortable: true,
+            width: '15%',
+            title: "Data da Solicitação",
+            render: ({ created_at }) => dayjs(created_at).format("DD/MM/YYYY")
+          },
+          {
+            accessor: 'actions',
+            title: <Box mr={6}>Ações</Box>,
+            textAlign: 'right',
+            width: '0%',
+            render: (record) => (
+              <Group gap={4} justify="right" wrap="nowrap">
+                <ActionIcon
+                  size="sm"
+                  variant="subtle"
+                  color="blue"
+                  onClick={(e: React.MouseEvent) => {
+                    e.stopPropagation();
+                    redirect(`/user/editdraft?dId=${record.draft_id}`)
+                  }}
+                >
+                  <IconEdit size={16} />
+                </ActionIcon>
+                <ActionIcon
+                  size="sm"
+                  variant="subtle"
+                  color="red"
+                  onClick={(e: React.MouseEvent) => {
+                    e.stopPropagation();
+                    setDraftTemp(record.draft_id)
+                    open()
+
+                  }}
+                >
+                  <IconTrash size={16} />
+                </ActionIcon>
+              </Group>
+
+            )
+          }
+        ]}
+        sortStatus={sortStatus}
+        onSortStatusChange={setSortStatus}
+        idAccessor="draft_id"
+        rowExpansion={{
+          content: ({ record }) => (
+            <Stack className={classes.details} p="xs" gap={6}>
+              <Card shadow="sm" padding="md" radius="md" withBorder className={classes.card}>
+                <Grid>
+                  <Grid.Col span={4}><Text fw={700} size='xs'>PRODUTO</Text></Grid.Col>
+                  <Grid.Col span={4}><Text fw={700} size='xs'>QUANTIDADE</Text></Grid.Col>
+                  <Grid.Col span={4}><Text fw={700} size='xs'>MEDIDA</Text></Grid.Col>
+                </Grid>
+                <Divider my="md" />
+                {record.draft_products_list.map((item) => {
+                  return (
+                    <>
+                      <Grid>
+                        <Grid.Col span={4}><Text size='xs'>{item.products.description}</Text></Grid.Col>
+                        <Grid.Col span={4}><Text size='xs'>{item.quantity}</Text></Grid.Col>
+                        <Grid.Col span={4}><Text size='xs'>{item.measures.measure}</Text></Grid.Col>
+                      </Grid>
+                      <Divider my="sm" />
+                    </>
+                  )
+                })}
+              </Card>
+            </Stack>
+          )
+        }}
+
+      />
+      <Modal
+        opened={modalDelete}
+        onClose={close}
+        title="ATENÇÃO! Tem certeza que deseja excluir?"
+        overlayProps={{
+          backgroundOpacity: 0.55,
+          blur: 3,
+        }}
+      >
+        <Grid mt={20}>
+          <Grid.Col span={4} >
+            <Button size="md" fullWidth onClick={() => {
+              setDraftTemp(null)
+              close()
+            }}>Cancelar</Button>
+
+          </Grid.Col>
+          <Grid.Col span={4}>
+            <Button fullWidth size="md" color='red'
+              onClick={() => {
+                deleteDraft(draftTemp)
+                setDraftTemp(null)
+                close()
+              }}
+            >Excluir</Button>
+
+          </Grid.Col>
+
+
+        </Grid>
+      </Modal>
+    </>
+  );
+}
