@@ -7,11 +7,12 @@ const Page = async () => {
   if (!session) redirect("/sign-in")
   
   if (session && session?.user?.role === "admin") {
-    redirect("/dashboard")
-  } else {
-    redirect("/user")
+    redirect("/admin/dashboard")
+    
   }
-  
+  if (session && session?.user?.role === "user") {
+    redirect("/user/dashboard")
+  }
 };
 
-export default Page;
+export default Page

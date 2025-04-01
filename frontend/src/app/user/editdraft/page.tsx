@@ -5,16 +5,19 @@ import {
     Grid,
     Button,
     Divider,
-    ScrollArea,
-    Table,
     ActionIcon,
     Group,
     Box,
-    Flex
+    Stack,
+    Flex,
+    useCombobox,
+    Combobox,
+    InputBase,
+    Input,
 } from "@mantine/core"
 import { DatePickerInput } from "@mantine/dates";
 import 'dayjs/locale/pt-br';
-import cx from 'clsx';
+
 import { DataTable, type DataTableSortStatus } from 'mantine-datatable';
 
 import ComboCompany from "@/components/ComboCompany/ComboCompany";
@@ -23,16 +26,17 @@ import ComboCostCenter from "@/components/ComboCostCenter/CostCenter";
 import ComboProject from "@/components/ComboProject/ComboProject";
 import AddProduct from "@/components/AddProduct/page";
 
-import classes from './page.module.css'
+import classes from './editdraft.module.css'
 import { useSession } from "next-auth/react";
-import { redirect, useSearchParams } from "next/navigation";
+import { redirect, useSearchParams, useRouter, usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
 
-import { updateDraft, getDraftsProducts, getDraftById, createOrder, getOrderNumber, getApproverByUserId, updateOrderProductsList, getOrderById, getProjectId, addProject, deleteDraftProduct } from "@/lib/orders/getOrderData";
+import { updateDraft, getDraftsProducts, getDraftById, createOrder, getOrderNumber, getApproverByUserId, updateOrderProductsList, getOrderById, getProjectId, addProject, deleteDraftProduct, getUsers } from "@/lib/orders/getOrderData";
 import { IconEdit, IconTrash } from "@tabler/icons-react";
 import { notifications } from "@mantine/notifications";
 import Loading from "@/app/loading";
 import EditProduct from "@/components/EditProduct/page";
+import actionSaveOrder from "@/lib/actionSaveOrder";
 
 export default function EditDraftPage() {
 
@@ -42,9 +46,11 @@ export default function EditDraftPage() {
     }
     const searchParams = useSearchParams()
     const dId = searchParams.get('dId')
+    const router = useRouter()
+    const path = usePathname()
 
     const [showData, setShowData] = useState(false)
-    const [companyName, setCompanyName] = useState(null)
+    const [companyName, setCompanyName] = useState('')
     const [companyId, setCompanyId] = useState('')
     const [deliveryDate, setDeliveryDate] = useState<Date | null>(null)
     const [draftDate, setDraftDate] = useState<Date | null>(null)
@@ -53,11 +59,12 @@ export default function EditDraftPage() {
     const [costCenterId, setCostCenterId] = useState(0)
     const [projectName, setProjectName] = useState('')
     const [projectId, setProjectId] = useState(0)
+    const [selectedApprover, setSelectedApprover] = useState('')
+    const [approvers, setApprovers] = useState<string[] | null>(null);
 
     const [draftNumber, setDraftNumber] = useState("")
     const [draftId, setDraftId] = useState(0)
 
-    const [scrolled, setScrolled] = useState(false);
     const [dataTable, setdataTable] = useState([])
 
     const resetFields = () => {
@@ -65,13 +72,13 @@ export default function EditDraftPage() {
         setDeliveryDate(null)
         setDraftNumber("")
         setDraftId(0)
-        setScrolled(false)
         setdataTable([])
     }
 
     const getData = async () => {
 
         const res = await getDraftById(parseInt(dId))
+        const approver = await getApproverByUserId(res?.approver_id)
         setCompanyName(res.companies?.company)
         setCompanyId(res.company_id)
         setDeliveryAddess(res.delivery_address)
@@ -80,27 +87,22 @@ export default function EditDraftPage() {
         setDraftNumber(res.draft_number)
         setDraftId(res.draft_id)
         setdataTable(res.draft_products_list)
-        if (res.companies?.company === 'HOLLYWOOD') {
-            setCostCenterId(0)
-            setProjectName(res.project ? res.project : '')
-            setProjectId(res.project_id)
-        } else {
-            setCostCenter(res.cost_center ? res.cost_center : '')
-            setCostCenterId(res.cost_center_id)
-            setProjectName("")
+        setCostCenterId(res?.cost_centers ? res?.cost_centers.cost_center_id : 0)
+        setCostCenter(res?.cost_centers ? res?.cost_centers?.cost_center : '')
+        setProjectName(res?.projects?.project ? res?.projects.project : '')
+        setProjectId(res.projects?.project_id ? res.projects?.project_id : 0)
+        setSelectedApprover(approver.name)
+        const approvers = async () => {
+            const result = await getUsers()
+            setApprovers(result)
         }
+        approvers()
         setShowData(true)
-
-
     }
 
     useEffect(() => {
         getData()
-
     }, [])
-
-    useEffect(() => {
-    }, [companyName, companyId, costCenter, costCenterId, projectName, projectId, deliveryAddress])
 
     const UpdataDP = async (draftid: number) => {
         setDraftId(draftid)
@@ -115,11 +117,12 @@ export default function EditDraftPage() {
     const ComboCompanyData = (ComboCompanyData: any) => {
         setCompanyName(ComboCompanyData.company)
         setCompanyId(ComboCompanyData.company_id)
+        setCostCenter("")
+        setCostCenterId(0)
     }
 
     const ComboDeliveryData = (ComboDeliveryData: any) => {
         setDeliveryAddess(ComboDeliveryData)
-        //saveTempDraft({ delivery_address: ComboDeliveryData })
     }
 
     const ComboCostCenterData = (ComboCostCenterData: any) => {
@@ -136,39 +139,38 @@ export default function EditDraftPage() {
         setProjectName(ComboProjectData)
     }
 
-
-
     const saveDraft = async () => {
+        if (companyName === '' || deliveryDate === null || deliveryAddress === '' || selectedApprover === '') {
+            notifications.show({
+                title: "Solicitações",
+                message: "Preencha todos os campos para continuar",
+                position: 'top-center',
+                color: 'red',
+            })
+
+            throw new Error
+        }
+        if (companyName !== 'HOLLYWOOD' && costCenterId === 0) {
+            notifications.show({
+                title: "Solicitações",
+                message: "Preencha com o Centro de Custo Correto!!",
+                position: 'top-center',
+                color: 'red',
+            })
+            throw new Error
+        }
         if (companyName === 'HOLLYWOOD' && projectName === '') {
-            notifications.show({
-                title: "Solicitações",
-                message: "Preencha todos os campos para continuar",
-                position: 'top-center',
-                color: 'red',
-            })
-            throw new Error
+            if (costCenterId === 0) {
+                notifications.show({
+                    title: "Solicitações",
+                    message: "Preencha com o Projeto ou o Centro de Custo",
+                    position: 'top-center',
+                    color: 'red',
+                })
+                throw new Error
+            }
         }
 
-        if(companyName !== 'HOLLYWOOD' && costCenter === '') {
-            notifications.show({
-                title: "Solicitações",
-                message: "Preencha todos os campos para continuar",
-                position: 'top-center',
-                color: 'red',
-            })
-            throw new Error
-        }
-
-        if (deliveryAddress === '') {
-            notifications.show({
-                title: "Solicitações",
-                message: "Preencha todos os campos para continuar",
-                position: 'top-center',
-                color: 'red',
-            })
-            throw new Error
-        }
-        
         if (companyName === 'HOLLYWOOD' && projectName !== '') {
             const getProj = await getProjectId(projectName)
                 .then(async (res) => {
@@ -183,6 +185,8 @@ export default function EditDraftPage() {
                             project_id: gproj
                         }
                         const updateValues = await updateDraft(values, draftNumber)
+                        setProjectId(gproj)
+                        setCostCenterId(0)
                     } else {
                         const values = {
                             company_id: companyId,
@@ -192,240 +196,317 @@ export default function EditDraftPage() {
                             project_id: res
                         }
                         const updateValues = await updateDraft(values, draftNumber)
+                        setProjectId(res)
+                        setCostCenterId(0)
                     }
                 })
         } else {
+            const appId = await checkApprover()
             const values = {
                 company_id: companyId,
                 delivery_address: deliveryAddress,
                 cost_center_id: costCenterId,
                 delivery_at: deliveryDate,
-                project_id: 0
-            }  
+                project_id: 0,
+                approver_id: appId
+            }
             const updateValues = await updateDraft(values, draftNumber)
         }
     }
 
-    const saveOrder = async () => {
-        if (companyName === "" || deliveryDate === null || deliveryAddress === '') {
-            notifications.show({
-                title: "Solicitações",
-                message: "Preencha todos os campos para continuar",
-                position: 'top-center',
-                color: 'red',
-            })
-            throw new Error
-        } else if (companyName === 'HOLLYWOOD' && projectId === 0) {
-            notifications.show({
-                title: "Solicitações",
-                message: "Preencha todos os campos para continuar",
-                position: 'top-center',
-                color: 'red',
-            })
-            throw new Error
-        } else if (companyName !== 'HOLLYWOOD' && costCenter === '') {
-            notifications.show({
-                title: "Solicitações",
-                message: "Preencha todos os campos para continuar",
-                position: 'top-center',
-                color: 'red',
-            })
-            throw new Error
-        }
-
-        const approverid = await getApproverByUserId(session?.user?.id)
-        const draftvalues = await getDraftById(draftId)
-        const draftproducts = await getDraftsProducts(draftId)
-        const gon = await getOrderNumber()
-        const on = gon + 1
-        //const on = gon
-        const codata = {
-            order_number: on,
-            user_id: session?.user?.id,
-            company_id: draftvalues?.company_id,
-            delivery_address: draftvalues?.delivery_address,
-            project_id: draftvalues?.project_id,
-            cost_center_id: draftvalues?.cost_center_id,
-            approver_id: approverid,
-            delivery_at: draftvalues?.delivery_at
-        }
-        const co = await createOrder(codata)
-        const orderid = await getOrderById(on)
-
-        const updatedata = draftproducts.map(async (item) => {
-            const prods = {
-                order_id: orderid,
-                product_id: item.product_id,
-                measure_id: item.measure_id,
-                quantity: item.quantity,
-                reference: item.reference,
-                obs: item.obs
+    const checkApprover = async () => {
+        let result
+        const res = approvers?.map((item) => {
+            if (item.name === selectedApprover) {
+                result = item.id
             }
-            const up = await updateOrderProductsList(prods)
         })
-
+        return result
     }
+
+    const saveOrder = async () => {
+        const sd = await saveDraft()
+            .then(async () => {
+                if (deliveryDate < new Date(Date.now())) {
+                    notifications.show({
+                        title: "Data Inválida",
+                        message: "Data de Entrega não pode ser inferior ao dia da Requisição",
+                        position: 'top-center',
+                        color: 'red',
+                    })
+                    throw new Error
+                }
+                if (dataTable.length === 0) {
+                    notifications.show({
+                        title: "Sem Produtos",
+                        message: "Adicione produto para a requisição.",
+                        position: 'top-center',
+                        color: 'red',
+                    })
+                    throw new Error
+                }
+
+                const saveorderdata = {
+                    userId: session?.user?.id,
+                    draftId: draftId
+                }
+                const so = await actionSaveOrder(saveorderdata)
+            })
+            .then(() => {
+                router.push("/user/orders")
+            })
+    }
+    const approverComboBox = useCombobox({
+        onDropdownClose: () => approverComboBox.resetSelectedOption(),
+    })
+
+    const approverOptions = approvers?.map((item) => (
+        <Combobox.Option value={item.name} key={item.id}>
+            {item.approver === 1 ? item.name : null}
+        </Combobox.Option>
+    ))
+
 
     if (!showData) return <Loading />
 
     return (
-        <Card shadow="sm" padding='xl' className={classes.wcard}>
-            <Card.Section p="sm" className={classes.card}>
-                <Grid>
-                    <Grid.Col span={12}>
+        <Stack w="100%" justify="center">
+            <Card shadow="sm" padding='sm' className={classes.wcard}>
+                <Card.Section p="sm" className={classes.card}>
+                    <Group justify="space-between">
+
                         <Text fw={900} size="md" className={classes.title} >
                             Requisição de Materiais
                         </Text>
-                    </Grid.Col>
+                        <Text fw={900} size="md" className={classes.title}>
+                            {new Date(draftDate).toLocaleDateString()}
+                        </Text>
+                    </Group>
+                </Card.Section>
+                <Group justify="space-between">
 
-                </Grid>
-
-            </Card.Section>
-            <Grid type="container">
-                <Grid.Col span={10}>
                     <Text fw={900} size="lg" mt="md" mb={10} variant="gradient" gradient={{ from: 'indigo', to: 'cyan', deg: 90 }}>
                         Dados da Solicitação - Nº {draftNumber}
                     </Text>
-                </Grid.Col>
-                <Grid.Col span={2}>
-                    <Text fw={500} size="sm" mt="md" mb={10} >
-                        Data: {new Date(draftDate).toLocaleDateString()}
-                    </Text>
-                </Grid.Col>
-            </Grid>
-
-            <Grid type="container" mt={10}>
-                <Grid.Col span={4}>
-                    <ComboCompany ComboCompanyData={ComboCompanyData} companyName={companyName} />
-                </Grid.Col>
-                <Grid.Col span={4}>
-                    {companyName === "HOLLYWOOD" ? <ComboProject ComboProjectData={ComboProjectData} projectName={projectName} /> : <ComboCostCenter ComboCostCenterData={ComboCostCenterData} costCenterName={costCenter} />}
-                </Grid.Col>
-                <Grid.Col span={4}>
-                    <DatePickerInput
-                        required
-                        label="Data de Entrega"
-                        placeholder="Selecione uma Data"
-                        value={deliveryDate}
-                        onChange={setDeliveryDate}
-                        locale="pt-br"
-                        firstDayOfWeek={1}
-                        valueFormat="DD/MM/YYYY"
-                    />
-                </Grid.Col>
-                <Grid.Col span={8}>
-                    <ComboDelivery ComboDeliveryData={ComboDeliveryData} deliveryAddress={deliveryAddress} />
-                </Grid.Col>
-            </Grid>
-            <Divider mt={30} />
-            <Grid>
-                <Grid.Col span={2}>
-                    <Text fw={900} size="lg" mt="md" variant="gradient" gradient={{ from: 'indigo', to: 'cyan', deg: 90 }}>
-                        Lista de Materiais
-                    </Text>
-                </Grid.Col>
-                <Grid.Col span={4}>
-                    <AddProduct draftNumber={draftNumber} upDataDP={UpdataDP} />
-                </Grid.Col>
-                <Grid.Col span={12}>
-                    <DataTable
-                        columns={[
-                            {
-                                accessor: 'products.description',
-                                title: 'Produtos',
-                                width: "30%"
-                            },
-                            {
-                                accessor: 'measures.measure',
-                                title: "Medida",
-                                width: "10%"
-                            },
-                            {
-                                accessor: 'quantity',
-                                title: 'Quantidade',
-                                width: "10%"
-                            },
-                            {
-                                accessor: 'obs',
-                                title: "Observações",
-                                width: "20%"
-                            },
-                            {
-                                accessor: 'reference',
-                                title: "Referência",
-                                width: "20%"
-                            },
-                            {
-                                accessor: 'actions',
-                                title: <Box mr={6}>Ações</Box>,
-                                textAlign: 'right',
-                                width: '0%',
-                                render: (record) => (
-                                    <Group gap={4} justify="right" wrap="nowrap">
-                                        <EditProduct dataprod={record} upDataDP={UpdataDP} />
-                                        <ActionIcon
-                                            size="sm"
-                                            variant="subtle"
-                                            color="red"
-                                            onClick={(e: React.MouseEvent) => {
-                                                e.stopPropagation();
-                                                deleteProd(record)
-                                                UpdataDP(record.draft_id)
-                                            }}
-                                        >
-                                            <IconTrash size={16} />
-                                        </ActionIcon>
-                                    </Group>
-                                )
-                            }
-                        ]}
-                        
-                        records={dataTable}
-                        striped
-                        highlightOnHover
-                        withTableBorder
-                        idAccessor="products.product_id"
-                    />
-                </Grid.Col>
-            </Grid>
-
-            <Card.Section className="classes.footer" m={20}>
-                <Group justify="space-between">
-                    <Group gap={0}>
-                    <Button variant="filled" color="teal.7"
-                    onClick={async () => {
-                        await saveDraft()
-                        notifications.show({
-                            title: "Salvar Rascunho",
-                            message: "Rascunho salvo com Sucesso!!!",
-                            position: 'top-center',
-                            color: 'indigo',
-                        })
-                        //resetFields()
-                    }
-                    }
-                >Salvar Rascunho</Button>
-                <Button ml={20} variant="filled" color="indigo"
-                    onClick={async () => {
-                        await saveOrder()
-                        notifications.show({
-                            title: "Solicitações",
-                            message: "Solicitação efetuada com Sucesso!!!",
-                            position: 'top-center',
-                            color: 'indigo',
-                        })
-                        resetFields()
-                    }
-                    }
-                >Enviar Requisição</Button>
-                    </Group>
                 </Group>
-            </Card.Section>
+                <Divider mb={15} />
+                <Grid>
+                    <Grid.Col span={{ base: 12, xs: 4 }}>
+                        <ComboCompany ComboCompanyData={ComboCompanyData} companyName={companyName} />
+                    </Grid.Col>
+                    {companyName === "HOLLYWOOD" ? <>
+                        <Grid.Col span={{ base: 12, xs: 4 }}>
+                            <ComboProject ComboProjectData={ComboProjectData} projectName={projectName} />
+                        </Grid.Col>
+                        <Grid.Col span={{ base: 12, xs: 4 }}>
+                            <ComboCostCenter ComboCostCenterData={ComboCostCenterData} costCenterName={costCenter} companyId={companyId} />
+                        </Grid.Col>
+                        <Grid.Col span={{ base: 12, xs: 6 }}>
+                            <ComboDelivery ComboDeliveryData={ComboDeliveryData} deliveryAddress={deliveryAddress} />
+                        </Grid.Col>
+                        <Grid.Col span={{ base: 12, xs: 3 }}>
+                            <DatePickerInput
+                                required
+                                label="Data de Entrega"
+                                placeholder="Selecione uma Data"
+                                value={deliveryDate}
+                                onChange={setDeliveryDate}
+                                locale="pt-br"
+                                firstDayOfWeek={1}
+                                valueFormat="DD/MM/YYYY"
+                            />
+                        </Grid.Col>
+                        <Grid.Col span={{ base: 12, xs: 3 }}>
+                            <Combobox
+                                store={approverComboBox}
+                                withinPortal={false}
+                                onOptionSubmit={(val) => {
+                                    setSelectedApprover(val)
+                                    approverComboBox.closeDropdown()
+                                }}
+                            >
+                                <Combobox.Target>
+                                    <InputBase
+                                        label="Aprovador"
+                                        required
+                                        component="button"
+                                        type="button"
+                                        pointer
+                                        rightSection={<Combobox.Chevron />}
+                                        onClick={() => {
+                                            approverComboBox.toggleDropdown()
+                                        }}
+                                        rightSectionPointerEvents="none">
+                                        {selectedApprover || <Input.Placeholder>Selecione um Aprovador</Input.Placeholder>}
+                                    </InputBase>
+                                </Combobox.Target>
+                                <Combobox.Dropdown>
+                                    <Combobox.Options>{approverOptions}</Combobox.Options>
+                                </Combobox.Dropdown>
+                            </Combobox>
+                        </Grid.Col>
+                    </> :
+                        <>
+                            <Grid.Col span={{ base: 12, xs: 4 }}>
+                                <ComboCostCenter ComboCostCenterData={ComboCostCenterData} costCenterName={costCenter} companyId={companyId} />
+                            </Grid.Col>
+                            <Grid.Col span={{ base: 12, xs: 4 }}>
+                                <DatePickerInput
+                                    required
+                                    label="Data de Entrega"
+                                    placeholder="Selecione uma Data"
+                                    value={deliveryDate}
+                                    onChange={setDeliveryDate}
+                                    locale="pt-br"
+                                    firstDayOfWeek={1}
+                                    valueFormat="DD/MM/YYYY"
+                                />
+                            </Grid.Col>
+                            <Grid.Col span={{ base: 12, xs: 6 }}>
+                                <ComboDelivery ComboDeliveryData={ComboDeliveryData} deliveryAddress={deliveryAddress} />
+                            </Grid.Col>
+                            <Grid.Col span={{ base: 12, xs: 6 }}>
+                                <Combobox
+                                    store={approverComboBox}
+                                    withinPortal={false}
+                                    onOptionSubmit={(val) => {
+                                        setSelectedApprover(val)
+                                        approverComboBox.closeDropdown()
+                                    }}
+                                >
+                                    <Combobox.Target>
+                                        <InputBase
+                                            label="Aprovador"
+                                            required
+                                            component="button"
+                                            type="button"
+                                            pointer
+                                            rightSection={<Combobox.Chevron />}
+                                            onClick={() => {
+                                                approverComboBox.toggleDropdown()
+                                            }}
+                                            rightSectionPointerEvents="none">
+                                            {selectedApprover || <Input.Placeholder>Selecione um Aprovador</Input.Placeholder>}
+                                        </InputBase>
+                                    </Combobox.Target>
+                                    <Combobox.Dropdown>
+                                        <Combobox.Options>{approverOptions}</Combobox.Options>
+                                    </Combobox.Dropdown>
+                                </Combobox>
+                            </Grid.Col>
+                        </>
 
-                
+                    }
+                </Grid>
+                <Divider mt={30} />
+                <Grid>
+                    <Grid.Col span={{ base: 12, xs: 6 }}>
+                        <Flex gap='md' mt={10}>
+                            <Text className={classes.subtitle} mt={1}>
+                                Lista de Materiais
+                            </Text>
+                            <AddProduct draftNumber={draftNumber} upDataDP={UpdataDP} />
+                        </Flex>
+                    </Grid.Col>
+                    <Grid.Col span={12}>
+                        <DataTable
+                            columns={[
+                                {
+                                    accessor: 'products.description',
+                                    title: 'Produtos',
+                                    width: "30%"
+                                },
+                                {
+                                    accessor: 'measures.measure',
+                                    title: "Medida",
+                                    width: "10%"
+                                },
+                                {
+                                    accessor: 'quantity',
+                                    title: 'Quantidade',
+                                    width: "10%"
+                                },
+                                {
+                                    accessor: 'obs',
+                                    title: "Observações",
+                                    width: "20%"
+                                },
+                                {
+                                    accessor: 'reference',
+                                    title: "Referência",
+                                    width: "20%"
+                                },
+                                {
+                                    accessor: 'actions',
+                                    title: <Box mr={6}>Ações</Box>,
+                                    textAlign: 'right',
+                                    width: '0%',
+                                    render: (record) => (
+                                        <Group gap={4} justify="right" wrap="nowrap">
+                                            <EditProduct dataprod={record} upDataDP={UpdataDP} />
+                                            <ActionIcon
+                                                size="sm"
+                                                variant="subtle"
+                                                color="red"
+                                                onClick={(e: React.MouseEvent) => {
+                                                    e.stopPropagation();
+                                                    deleteProd(record)
+                                                    UpdataDP(record.draft_id)
+                                                }}
+                                            >
+                                                <IconTrash size={16} />
+                                            </ActionIcon>
+                                        </Group>
+                                    )
+                                }
+                            ]}
 
+                            records={dataTable}
+                            striped
+                            highlightOnHover
+                            withTableBorder
+                            idAccessor="products.product_id"
+                        />
+                    </Grid.Col>
+                </Grid>
+                <Grid type="container" mt={50}>
+                    <Grid.Col span={{ base: 12, xs: 12 }}>
+                        <Button variant="filled" color="teal.7"
+                            onClick={async () => {
+                                const sd = await saveDraft()
+                                    .then(() => {
+                                        notifications.show({
+                                            title: "Solicitação",
+                                            message: "Solicitação salva com Sucesso!!!",
+                                            position: 'top-center',
+                                            color: 'indigo',
+                                        })
+                                    })
+                            }
+                            }
+                        >Salvar Solicitação</Button>
+                        <Button ml={20} variant="filled" color="indigo"
+                            onClick={async () => {
+                                const so = await saveOrder()
+                                    .then(() => {
+                                        notifications.show({
+                                            title: "Requisição",
+                                            message: "Requisição efetuada com Sucesso!!!",
+                                            position: 'top-center',
+                                            color: 'indigo',
+                                        })
+                                    })
+                                    .then(() => {
+                                        resetFields()
+                                        router.push("/user/orders")
+                                    })
 
-        </Card>
-
+                            }
+                            }
+                        >Enviar Requisição</Button>
+                    </Grid.Col>
+                </Grid>
+            </Card>
+        </Stack>
     )
 }

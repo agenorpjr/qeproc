@@ -9,11 +9,21 @@ import db from "../db/db";
 export async function getApproverByUserId(id: any) {
     const user = await db.user.findFirst({
         where: {
-            approver_id: id
+            id: id
         }
     })
-    return user?.approver_id
+    return user
 }
+
+export async function getApproverByName(name: any) {
+    const user = await db.user.findFirst({
+        where: {
+            name: name
+        }
+    })
+    return user?.id
+}
+
 
 export async function getApprovers() {
     const approvers = await db.user.findMany()
@@ -27,11 +37,6 @@ export async function getCompanies() {
 export async function getDeliveries() {
     const deliveries = await db.delivery_addresses.findMany()
     return deliveries
-}
-
-export async function getCostCenters() {
-    const cost_centers = await db.cost_centers.findMany()
-    return cost_centers
 }
 
 export async function getProjects() {
@@ -71,13 +76,46 @@ export async function addProductoOnTable(data: any) {
     return adp
 }
 
+//===============================================================================
+// USERS
+//===============================================================================
 
+
+export async function getUsers() {
+    const users = await db.user.findMany()
+    return users
+}
+
+export async function updatePurchaser(data:any) {
+    const user = await db.user.update({
+        where: {
+            id: data.id
+        },
+        data: {
+            purchaser: data.purchaser
+        }
+    })
+}
+
+export async function updateApprover(data:any) {
+    const user = await db.user.update({
+        where: {
+            id: data.id
+        },
+        data: {
+            approver: data.approver
+        }
+    })
+}
 
 //===============================================================================
 // DRAFTS
 //===============================================================================
 
 export async function getDrafts(user_id: string) {
+    if (user_id === undefined) {
+        return null
+    }
     const drafts = db.drafts.findMany({
         where: {
             user_id: user_id
@@ -89,7 +127,9 @@ export async function getDrafts(user_id: string) {
                     products: true,
                     measures: true
                 }
-            }
+            },
+            cost_centers: true,
+            projects: true
         }
     })
     return drafts
@@ -127,27 +167,11 @@ export async function getDraftById(id) {
                     products: true,
                 }
             },
-            companies: true,            
+            companies: true,
+            projects: true,
+            cost_centers: true,
         }
     })
-    if (draft?.project_id !== 0) {
-        const proj = await db.projects.findFirst({
-            where: {
-                project_id: draft?.project_id
-            }
-        })
-        Object.assign(draft, proj)
-    }
-
-    if (draft?.cost_center_id !== 0) {
-        const cc = await db.cost_centers.findFirst({
-            where: {
-                cost_center_id: draft?.cost_center_id
-            }
-        })
-        Object.assign(draft, cc)
-    }
-    
     return draft
 }
 
@@ -163,10 +187,11 @@ export async function updateDraft(savedata: any, dn: Number) {
             cost_center_id: savedata.cost_center_id,
             project_id: savedata.project_id,
             delivery_at: savedata.delivery_at,
-            draft_status: "enable"
+            draft_status: "enable",
+            approver_id: savedata.approver_id
         }
     })
-    revalidatePath("/user/order")
+   
 }
 
 export async function addDraftNumber(draftnumber: string, user_id: string) {
@@ -174,6 +199,7 @@ export async function addDraftNumber(draftnumber: string, user_id: string) {
         data: {
             draft_number: draftnumber,
             user_id: user_id,
+            approver_id: user_id
         }
     })
 }
@@ -225,7 +251,6 @@ export async function addDraftProduct(dataproduct: any) {
             obs: dataproduct.obs
         }
     })
-    revalidatePath("/user/order")
 }
 
 export async function editDraftProduct(dataproduct: any) {
@@ -270,7 +295,7 @@ export async function getOrderNumber() {
             take: 1,
         })
         return order[0].order_number
-    } catch(err) {
+    } catch (err) {
         return 0
     }
 }
@@ -298,6 +323,7 @@ export async function createOrder(values: any) {
             delivery_at: values.delivery_at
         }
     })
+    return co
 }
 
 export async function getOrders(user_id: string) {
@@ -312,28 +338,48 @@ export async function getOrders(user_id: string) {
                     products: true,
                     measures: true
                 }
-            }
+            },
+            cost_centers: true,
+            projects: true,
         }
     })
     return orders
 }
+
+export async function getAllOrders() {
+    const orders = db.orders.findMany({
+        include: {
+            companies: true,
+            order_products_list: {
+                include: {
+                    products: true,
+                    measures: true
+                }
+            },
+            cost_centers: true,
+            projects: true,
+            User: true
+        }
+    })
+    return orders
+}
+
 //===============================================================================
 // ORDER_PRODUCTS_LIST
 //===============================================================================
 
-export async function updateOrderProductsList(values: any) {
+export async function updateOrderProductsList(item: any) {
     const uopl = await db.order_products_list.create({
         data: {
-            order_id: values.order_id,
-            product_id: values.product_id,
-            measure_id: values.measure_id,
-            quantity: values.quantity,
-            reference: values.reference,
-            obs: values.obs
+            order_id: item.order_id,
+            product_id: item.product_id,
+            measure_id: item.measure_id,
+            quantity: item.quantity,
+            reference: item.reference,
+            obs: item.obs
         }
     })
 }
-
 
 //===============================================================================
 // PROJECTS
@@ -368,4 +414,17 @@ export async function addProject(projectName: string) {
         }
     })
     return addproj.project_id
+}
+
+//===============================================================================
+// COST_CENTERS
+//===============================================================================
+
+export async function getCostCenters(cId: number) {
+    const cost_centers = await db.cost_centers.findMany({
+        where: {
+            company_id: cId
+        }
+    })
+    return cost_centers
 }

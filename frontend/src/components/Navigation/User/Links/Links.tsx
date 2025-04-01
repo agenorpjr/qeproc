@@ -68,7 +68,7 @@ export function LinksGroup(props: LinksGroupProps) {
         <LinkItem link={link} />
       </Menu.Item>
     ) : (
-      <LinkItem key={link.label} link={link} />
+      <LinkItem key={link.link} link={link} />
     ),
   );
 
@@ -159,10 +159,8 @@ export function LinksGroup(props: LinksGroupProps) {
   ]);
 
   useEffect(() => {
-    const paths = pathname.split('/');
-    setOpened(paths.includes(label.toLowerCase()));
-    setCurrentPath(_.last(paths)?.toLowerCase() || undefined);
-  }, [pathname, label]);
+    setOpened(pathname === link);
+  }, [pathname, link]);
 
   return <>{content}</>;
 }

@@ -3,91 +3,36 @@ import { useEffect } from 'react';
 import { ActionIcon, Box, Flex, Group, ScrollArea, Text } from '@mantine/core';
 import { useMediaQuery } from '@mantine/hooks';
 import {
-  IconBook2,
-  IconBrandAuth0,
-  IconBriefcase,
   IconCalendar,
-  IconChartArcs3,
-  IconChartBar,
-  IconChartInfographic,
-  IconExclamationCircle,
-  IconFileInvoice,
-  IconFiles,
-  IconLayersSubtract,
-  IconLifebuoy,
-  IconList,
+  IconClipboardPlus,
+  IconFolderQuestion,
+  IconFoldersFilled,
+  IconLayoutDashboardFilled,
   IconListDetails,
-  IconLogin2,
-  IconMessages,
-  IconReceipt2,
-  IconRotateRectangle,
-  IconUserCircle,
   IconUserCode,
-  IconUserPlus,
-  IconUserShield,
   IconX,
 } from '@tabler/icons-react';
 
 import { SidebarState } from '@/app/apps/layout';
 import { Logo, UserProfileButton } from '@/components';
 import { LinksGroup } from '@/components/Navigation/User/Links/Links';
-import UserProfileData from "../../../../public/mocks/UserProfile.json"
-import {
-  PATH_ABOUT,
-  PATH_APPS,
-  PATH_AUTH,
-  PATH_DASHBOARD,
-  PATH_DOCS,
-  PATH_PAGES,
-} from '@/routes';
 
 import classes from '../Navigation.module.css';
+import { useSession } from 'next-auth/react';
+import { redirect } from 'next/navigation';
 
 const mockdata = [
   {
-    title: 'Dashboard',
     links: [
-      { label: 'Padrão', icon: IconChartBar, link: PATH_DASHBOARD.default },
-      {
-        label: 'Meus Pedidos',
-        icon: IconChartInfographic,
-        link: "/user/orders",
-      },
-      { label: 'Meus Rascunhos', icon: IconChartArcs3, link: "/user/drafts" },
+      { label: 'Dashboard', icon: IconLayoutDashboardFilled, link: '/user/dashboard' },
+      { label: 'Minhas Requisições', icon: IconFoldersFilled, link: "/user/orders"},
+      { label: 'Minhas Solicitações', icon: IconFolderQuestion, link: "/user/drafts" },
+      { label: 'Nova Solicitação', icon: IconClipboardPlus, link: "/user/order" },
+      { label: 'Configurações', icon: IconUserCode, link: '/user/settings' },
+      { label: 'Tasks', icon: IconListDetails, link: '/user' },
+      { label: 'Calendar', icon: IconCalendar, link: '/user' },
     ],
-  },
-  {
-    title: 'Funções',
-    links: [
-      { label: 'Fazer Pedido', icon: IconUserCircle, link: "/user/order" },
-      { label: 'Settings', icon: IconUserCode, link: PATH_APPS.settings },
-      { label: 'Chat', icon: IconMessages, link: PATH_APPS.chat },
-      { label: 'Projects', icon: IconBriefcase, link: PATH_APPS.projects },
-      { label: 'Orders', icon: IconListDetails, link: PATH_APPS.orders },
-      {
-        label: 'Invoices',
-        icon: IconFileInvoice,
-        links: [
-          {
-            label: 'List',
-            link: PATH_APPS.invoices.all,
-          },
-          {
-            label: 'Details',
-            link: PATH_APPS.invoices.sample,
-          },
-        ],
-      },
-      { label: 'Tasks', icon: IconListDetails, link: PATH_APPS.tasks },
-      { label: 'Calendar', icon: IconCalendar, link: PATH_APPS.calendar },
-      {
-        label: 'File Manager',
-        icon: IconFiles,
-        link: PATH_APPS.fileManager.root,
-      },
-    ],
-  },
-  
+  }
 ];
 
 type NavigationProps = {
@@ -102,6 +47,8 @@ const NavigationUser = ({
   sidebarState,
 }: NavigationProps) => {
   const tablet_match = useMediaQuery('(max-width: 768px)');
+
+  const { data: session } = useSession()
 
   const links = mockdata.map((m) => (
     <Box key={m.title} pl={0} mb={sidebarState === 'mini' ? 0 : 'md'}>
@@ -164,9 +111,9 @@ const NavigationUser = ({
 
       <div className={classes.footer}>
         <UserProfileButton
-          email={UserProfileData.email}
-          image={UserProfileData.avatar}
-          name={UserProfileData.name}
+          email={session?.user?.email}
+          image={""}
+          name={session?.user?.name}
           showText={sidebarState !== 'mini'}
         />
       </div>

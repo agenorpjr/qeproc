@@ -56,7 +56,6 @@ export default function ComboProject({ ComboProjectData, projectName }) {
         >
             <Combobox.Target>
                 <TextInput
-                    required
                     label="Projeto"
                     placeholder="Projeto"
                     value={selectedProject}

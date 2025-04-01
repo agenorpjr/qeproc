@@ -10,14 +10,16 @@ import {
   Grid,
   InputBase,
   Input,
-  Text
+  Text,
+  NumberInput
 } from '@mantine/core';
 import { notifications } from "@mantine/notifications";
 import { useEffect, useState } from "react"
-import revPath, { addDraftProduct, addProductoOnTable, getDraftId, getMeasures, getProducts } from '@/lib/orders/getOrderData';
+import { addDraftProduct, addProductoOnTable, getDraftId, getMeasures, getProducts } from '@/lib/orders/getOrderData';
 
 import classes from "./AddProduct.module.css"
 import { IconPlus } from '@tabler/icons-react';
+import { useMediaQuery } from '@mantine/hooks';
 
 export default function AddProduct({ draftNumber, upDataDP }) {
   const stack = useModalsStack(['addnewproduct', 'typenewproduct']);
@@ -29,11 +31,13 @@ export default function AddProduct({ draftNumber, upDataDP }) {
 
 
   const [newproduct, setNewProduct] = useState('')
-  const [quantity, setQuantity] = useState('')
+  const [quantity, setQuantity] = useState<string | number>('')
   const [obs, setObs] = useState('')
   const [reference, setReference] = useState('')
   const [productId, setProductId] = useState(0)
   const [measureId, setMeasureId] = useState(0)
+
+  const tablet_match = useMediaQuery('(max-width: 768px)');
 
 
   const shouldFilterProductOptions = !optionsProduct.some(({ description }) => description === selectedProduct)
@@ -93,6 +97,8 @@ export default function AddProduct({ draftNumber, upDataDP }) {
       obs: obs
     }
     const apdl = await addDraftProduct(dataproduct)
+    const products = await getProducts()
+    setOptionsProduct(products)
     upDataDP(draft_id)
   }
 
@@ -170,13 +176,16 @@ export default function AddProduct({ draftNumber, upDataDP }) {
           </Combobox>
           <Grid>
             <Grid.Col span={6} mt='md'>
-              <TextInput
+              <NumberInput
                 label="Quantidade"
                 placeholder='Digite a Quantidade'
                 value={quantity}
-                onChange={(event) => {
-                  setQuantity(event.currentTarget.value);
-                }} />
+                onChange={setQuantity}
+                allowNegative={false}
+                allowDecimal={false}
+                hideControls
+
+              />
             </Grid.Col>
             <Grid.Col span={6} mt='md'>
               <Combobox
@@ -200,7 +209,7 @@ export default function AddProduct({ draftNumber, upDataDP }) {
 
                       comboboxmeasure.toggleDropdown()
                     }}>
-                    {selectedMeasure || <Input.Placeholder>Selecione a medida</Input.Placeholder>}
+                    {selectedMeasure || <Input.Placeholder>{tablet_match ? "Selecione": "Selecione a medida"}</Input.Placeholder>}
                   </InputBase>
                 </Combobox.Target>
                 <Combobox.Dropdown>
@@ -232,15 +241,15 @@ export default function AddProduct({ draftNumber, upDataDP }) {
               Criar Novo Produto
             </Button>
             <Button onClick={() => {
-                  if (selectedProduct === "" || quantity === '' || selectedMeasure === '') {
-                    notifications.show({
-                        title: "Adicionar Produto",
-                        message: "Preencha todos os campos obrigatórios para continuar",
-                        position: 'top-center',
-                        color: 'red',
-                    })
-                    throw new Error
-        }
+              if (selectedProduct === "" || quantity === '' || selectedMeasure === '') {
+                notifications.show({
+                  title: "Adicionar Produto",
+                  message: "Preencha todos os campos obrigatórios para continuar",
+                  position: 'top-center',
+                  color: 'red',
+                })
+                throw new Error
+              }
               addProductDraftList()
               stack.close('addnewproduct')
             }}
@@ -275,16 +284,20 @@ export default function AddProduct({ draftNumber, upDataDP }) {
         </Modal>
 
       </Modal.Stack>
-      <Grid mt={12}>
-        <Grid.Col span={2}>
-          <Button variant='outline' onClick={() => {
-            resetFields()
-            stack.open('addnewproduct')
-          }}><IconPlus size={16} />
-            <Text size='md' ml={10}>Adicionar Produto</Text>
+      <Group>
+          <Button
+            variant='outline'
+            onClick={() => {
+              resetFields()
+              stack.open('addnewproduct')
+
+            }}
+            size='xs'
+            >
+            <IconPlus size={16} />
+            <Text className={classes.button} ml={10}>Produto</Text>
           </Button>
-        </Grid.Col>
-      </Grid>
+      </Group>
 
     </>
   )

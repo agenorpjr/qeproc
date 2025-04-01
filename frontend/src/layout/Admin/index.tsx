@@ -8,7 +8,7 @@ import { useDisclosure, useLocalStorage, useMediaQuery } from '@mantine/hooks';
 import AppMain from '@/components/AppMain';
 import FooterNav from '@/components/FooterNav';
 import HeaderNav from '@/components/HeaderNav';
-import Navigation from '@/components/Navigation';
+import NavigationAdmin from '@/components/Navigation/Admin';
 
 export type SidebarState = 'hidden' | 'mini' | 'full';
 
@@ -16,7 +16,7 @@ type Props = {
   children: ReactNode;
 };
 
-export function MainLayout({ children }: Props) {
+export function MainAdminLayout({ children }: Props) {
   const theme = useMantineTheme();
   const tablet_match = useMediaQuery('(max-width: 768px)');
   const [mobileOpened, { toggle: toggleMobile }] = useDisclosure();
@@ -62,7 +62,7 @@ export function MainLayout({ children }: Props) {
         </Container>
       </AppShell.Header>
       <AppShell.Navbar>
-        <Navigation
+        <NavigationAdmin
           onClose={toggleMobile}
           sidebarState={sidebarState}
           onSidebarStateChange={setSidebarState}

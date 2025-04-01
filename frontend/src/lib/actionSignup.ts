@@ -3,10 +3,10 @@ import db from "./db/db"
 import { zodschema } from "./zodschema"
 import bcrypt from 'bcryptjs'
 
-const signUp = async (formData: FormData) => {
+const signUp = async (signupdata: any) => {
 
-    const password = formData.get('password')
-    const password2 = formData.get('password2')
+    const password = signupdata.password
+    const password2 = signupdata.password2
     if (password !== password2) {
         return {
             success: false,
@@ -14,15 +14,13 @@ const signUp = async (formData: FormData) => {
         }
     }
     try {
-        const name = formData.get('name')
-        const email = formData.get('email')
-        const role = formData.get('role')
-        const approver_id = formData.get('approver_id')
+        const name = signupdata.name
+        const email = signupdata.email
+        const role = signupdata.role
+        const approver_id = signupdata.approver_id
         const validatedData = zodschema.parse({ email, password })
         const hashPwd = await bcrypt.hash(validatedData.password, 10)
-        
-        console.log('resultado de name', name)
-        console.log('resultado de role', role)
+
         await db.user.create({
             data: {
                 name: name,

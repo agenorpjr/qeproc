@@ -1,20 +1,20 @@
 import {
     Button,
-    Input,
     Paper,
     PasswordInput,
     TextInput,
     Title,
 } from '@mantine/core';
 import classes from './signin.module.css';
-import { signIn } from "@/lib/auth";
+import { auth, signIn } from "@/lib/auth";
 import { isRedirectError } from 'next/dist/client/components/redirect-error';
 import { redirect } from 'next/navigation';
 
 async function action(formData: FormData) {
     "use server"
     try {
-        formData.append('redirectTo', '/dashboard');
+        formData.append('redirect', 'false');
+        
         await signIn('credentials', formData)
     } catch (error) {
         if (isRedirectError(error)) {
@@ -27,6 +27,9 @@ async function action(formData: FormData) {
 }
 
 export default async function SigninPage() {
+
+    const session = await auth()
+
     return (
         <div className={classes.wrapper}>
             <form action={action}>

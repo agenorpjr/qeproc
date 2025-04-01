@@ -11,14 +11,14 @@ import { useEffect, useState } from "react"
 import { getCostCenters } from "@/lib/orders/getOrderData"
 
 
-export default function ComboCostCenter({ ComboCostCenterData, costCenterName }) {
+export default function ComboCostCenter({ ComboCostCenterData, costCenterName, companyId }) {
     const [selectedCompany, setselectedCostCenter] = useState(costCenterName);
     const [optionsCostCenter, setoptionsCostCenter] = useState([])
     const [search, setSearch] = useState('')
 
     const optionsCostCenterCombo = optionsCostCenter.filter(({ cost_center, cost_center_id }) => cost_center.toLowerCase().includes(search.toLowerCase().trim()))
-        .map(({ cost_center }) => (
-            <Combobox.Option value={cost_center} key={cost_center}>
+        .map(({ cost_center, cost_center_id }) => (
+            <Combobox.Option value={cost_center} key={cost_center_id}>
                 {cost_center}
             </Combobox.Option>
         ))
@@ -26,13 +26,15 @@ export default function ComboCostCenter({ ComboCostCenterData, costCenterName })
     useEffect(() => {
         const getOptions = async () => {
             try {
-                const costcenters = await getCostCenters()
+                const costcenters = await getCostCenters(companyId)
                 setoptionsCostCenter(costcenters)
-            } catch (err) { }
+            } catch (err) {
+                setoptionsCostCenter([])
+             }
         }
         getOptions()
         comboboxcostcenter.selectFirstOption()
-    }, []);
+    }, [companyId, costCenterName]);
 
     const comboboxcostcenter = useCombobox({
         onDropdownClose: () => {
@@ -74,7 +76,7 @@ export default function ComboCostCenter({ ComboCostCenterData, costCenterName })
         >
             <Combobox.Target>
                 <InputBase
-                    required
+                    required={companyId === 3 ? false : true}
                     component="button"
                     type="button"
                     pointer

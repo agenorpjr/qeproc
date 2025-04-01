@@ -4,22 +4,26 @@ import { DataTable, type DataTableSortStatus } from 'mantine-datatable';
 import sortBy from 'lodash/sortBy';
 import { useEffect, useState } from 'react';
 import { deleteDraftById, deleteDraftProduct, getDrafts, getDraftsProducts } from '@/lib/orders/getOrderData';
-import { redirect } from 'next/navigation';
+
+import { redirect, useRouter } from 'next/navigation';
 import { useSession } from 'next-auth/react';
 import dayjs from 'dayjs';
-import { ActionIcon, Box, Button, Card, Divider, Flex, Grid, Group, Modal, Stack, Table, Text, Title } from '@mantine/core';
+import { ActionIcon, Box, Button, Card, Divider, Flex, Grid, Group, Modal, Stack, Text, Title } from '@mantine/core';
 
 import classes from './drafts.module.css'
 import { IconEdit, IconEye, IconTrash } from '@tabler/icons-react';
 import { useDisclosure } from '@mantine/hooks';
+import Loading from '@/app/loading';
 
 export type Draft = {
   draft_id: number;
   draft_number: number,
   company_id: number,
   delivery_address: string,
+  cost_center: string,
   cost_center_id: number,
-  projetct_id: number,
+  project: string,
+  project_id: number,
   created_at: string,
   delivery_at: string,
   draft_status: string,
@@ -28,11 +32,13 @@ export type Draft = {
 }
 
 export default function DraftPage() {
-  const { data: session } = useSession()
+  const { data: session, status } = useSession()
+
   if (session?.user?.role === "admin") {
     redirect("/admin")
   }
 
+  const router = useRouter()
   const [sortStatus, setSortStatus] = useState<DataTableSortStatus<Draft>>({
     columnAccessor: 'draft_number',
     direction: 'desc',
@@ -42,17 +48,20 @@ export default function DraftPage() {
   const [records, setRecords] = useState(sortBy(draftsData, 'draft_id'));
   const [draftTemp, setDraftTemp] = useState(null)
 
+
   useEffect(() => {
+
     const drafts = async () => {
       try {
-        const res = await getDrafts(session?.user?.user_id)
+        const res = await getDrafts(session?.user?.id)
         setDraftsData(res)
+
         const data = sortBy(res, sortStatus.columnAccessor) as Draft[];
         setRecords(sortStatus.direction === 'desc' ? data.reverse() : data);
       } catch (err) { }
     }
     drafts()
-  }, [sortStatus]);
+  }, [sortStatus, session?.user.id]);
 
   const deleteDraft = async (datadeletedraft: any) => {
     const gdp = await getDraftsProducts(datadeletedraft)
@@ -66,12 +75,14 @@ export default function DraftPage() {
 
   const updateDrafts = async () => {
     try {
-      const res = await getDrafts(session?.user?.user_id)
+      const res = await getDrafts(session?.user?.id)
       setDraftsData(res)
       const data = sortBy(res, sortStatus.columnAccessor) as Draft[];
       setRecords(sortStatus.direction === 'desc' ? data.reverse() : data);
     } catch (err) { }
   }
+
+  if (status === 'loading') return <Loading />
 
   return (
     <>
@@ -85,6 +96,8 @@ export default function DraftPage() {
           { accessor: 'draft_number', width: '5%', sortable: true, title: "Solicitação nº" },
           { accessor: 'companies.company', width: '25%', title: "Empresa", sortable: true },
           { accessor: 'delivery_address', width: '35%', title: "Endereço de Entrega" },
+          { accessor: 'cost_centers.cost_center', width: '15%', title: "Centro de Custo", sortable: true },
+          { accessor: 'projects.project', width: '15%', title: "Projeto", sortable: true },
           {
             accessor: 'delivery_at',
             textAlign: 'right',
@@ -114,7 +127,7 @@ export default function DraftPage() {
                   color="blue"
                   onClick={(e: React.MouseEvent) => {
                     e.stopPropagation();
-                    redirect(`/user/editdraft?dId=${record.draft_id}`)
+                    router.push(`/user/editdraft?dId=${record.draft_id}`)
                   }}
                 >
                   <IconEdit size={16} />
@@ -143,20 +156,21 @@ export default function DraftPage() {
         rowExpansion={{
           content: ({ record }) => (
             <Stack className={classes.details} p="xs" gap={6}>
+              <Divider my="md" />
               <Card shadow="sm" padding="md" radius="md" withBorder className={classes.card}>
                 <Grid>
-                  <Grid.Col span={4}><Text fw={700} size='xs'>PRODUTO</Text></Grid.Col>
-                  <Grid.Col span={4}><Text fw={700} size='xs'>QUANTIDADE</Text></Grid.Col>
-                  <Grid.Col span={4}><Text fw={700} size='xs'>MEDIDA</Text></Grid.Col>
+                  <Grid.Col span={6}><Text fw={700} size='xs'>PRODUTO</Text></Grid.Col>
+                  <Grid.Col span={2}><Text fw={700} size='xs'>QUANTIDADE</Text></Grid.Col>
+                  <Grid.Col span={2}><Text fw={700} size='xs'>MEDIDA</Text></Grid.Col>
                 </Grid>
                 <Divider my="md" />
                 {record.draft_products_list.map((item) => {
                   return (
                     <>
                       <Grid>
-                        <Grid.Col span={4}><Text size='xs'>{item.products.description}</Text></Grid.Col>
-                        <Grid.Col span={4}><Text size='xs'>{item.quantity}</Text></Grid.Col>
-                        <Grid.Col span={4}><Text size='xs'>{item.measures.measure}</Text></Grid.Col>
+                        <Grid.Col span={6}><Text size='xs'>{item.products.description}</Text></Grid.Col>
+                        <Grid.Col span={2}><Text size='xs'>{item.quantity}</Text></Grid.Col>
+                        <Grid.Col span={2}><Text size='xs'>{item.measures.measure}</Text></Grid.Col>
                       </Grid>
                       <Divider my="sm" />
                     </>
@@ -193,10 +207,7 @@ export default function DraftPage() {
                 close()
               }}
             >Excluir</Button>
-
           </Grid.Col>
-
-
         </Grid>
       </Modal>
     </>

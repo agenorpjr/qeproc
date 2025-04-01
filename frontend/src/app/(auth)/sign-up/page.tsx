@@ -9,7 +9,11 @@ import {
     Stack,
     Title,
     TextInput,
-    Notification
+    Notification,
+    useCombobox,
+    Combobox,
+    InputBase,
+    Input
 } from '@mantine/core';
 import { IconInfoCircle } from '@tabler/icons-react';
 import { signUp } from "@/lib/actionSignup";
@@ -18,7 +22,7 @@ import classes from './signup.module.css';
 import { useSession } from 'next-auth/react';
 import { notifications } from '@mantine/notifications';
 import { useEffect, useState } from 'react';
-import { getApprovers } from '@/lib/orders/getOrderData';
+import { getApproverByName, getApprovers } from '@/lib/orders/getOrderData';
 import Loading from '@/app/loading';
 
 export default function SignUpPage() {
@@ -33,32 +37,92 @@ export default function SignUpPage() {
         redirect("/user")
     }
 
-    const [approvers, setApprovers] = useState(null)
+    const [approvers, setApprovers] = useState([])
+    const [selectedApprover, setSelectedApprover] = useState<string | null>(null)
+    const [approverId, setApproverId] = useState('')
+    const [nameUser, setName] = useState("")
+    const [email, setEmail] = useState("")
+    const [password, setPassword] = useState("")
+    const [password2, setPassword2] = useState("")
+    const [role, setRole] = useState("user")
+
 
     useEffect(() => {
         const getapprovers = async () => {
-            let appnames = []
             const res = await getApprovers()
-            const apps = res.map((item) => {
-                appnames.push({
-                    name: item.name,
-                    id: item.id
-            })
-            })
-            setApprovers(appnames)
-            
-            
+            setApprovers(res)
         }
         getapprovers()
     }, [])
 
     useEffect(() => {
-        console.log('aprovadores', approvers)
-    }, [approvers])
 
-    async function action(formData: FormData) {
+    }, [approvers, approverId])
+
+
+    const optionsApproverCombo = approvers.filter(({ name }) => name.toLowerCase())
+        .map(({ name, id }) => (
+            <Combobox.Option value={name} key={id}>
+                {name}
+            </Combobox.Option>
+        ))
+
+    const combobox = useCombobox({
+        onDropdownClose: () => combobox.resetSelectedOption(),
+    });
+
+
+    const createUser = async () => {
+        if (nameUser === "" || nameUser.length < 5) {
+            notifications.show({
+                title: "Registro de Usuário",
+                message: "Nome Inválido",
+                position: 'top-center',
+                color: 'red',
+            })
+            throw new Error
+        }
+
+        if (email === '') {
+            notifications.show({
+                title: "Registro de Usuário",
+                message: "Email Inválido",
+                position: 'top-center',
+                color: 'red',
+            })
+            throw new Error
+        }
+
+        if (password === '' || password.length < 6) {
+            notifications.show({
+                title: "Registro de Usuário",
+                message: "Senha Inválida",
+                position: 'top-center',
+                color: 'red',
+            })
+            throw new Error
+        }
+
+        if (password !== password2) {
+            notifications.show({
+                title: "Registro de Usuário",
+                message: "Senhas Não Conferem",
+                position: 'top-center',
+                color: 'red',
+            })
+            throw new Error
+        }
         try {
-            const sup = await signUp(formData)
+            const aId = await getApproverByName(nameUser)
+            const dataSignUp = {
+                name: nameUser,
+                email: email,
+                password: password,
+                password2: password2,
+                role: role,
+                approver_id: "2"
+            }
+            const sup = await signUp(dataSignUp)
             console.log('dados do signup', sup)
         } catch (err) {
             notifications.show({
@@ -91,14 +155,14 @@ export default function SignUpPage() {
                         Sistema de Compras Quanta - Registro de Usuário
                     </Title>
 
-                    <form action={action}>
+                    <div>
                         <Stack>
                             <TextInput
                                 required
                                 label="Nome"
                                 placeholder="Nome do Usuário"
-                                name="name"
                                 radius="md"
+                                onChange={(event) => setName(event.currentTarget.value)}
                             />
                             <TextInput
                                 required
@@ -106,6 +170,7 @@ export default function SignUpPage() {
                                 placeholder="email@quanta.works"
                                 name="email"
                                 radius="md"
+                                onChange={(event) => setEmail(event.currentTarget.value)}
                             />
 
                             <PasswordInput
@@ -114,38 +179,64 @@ export default function SignUpPage() {
                                 placeholder="Sua Senha"
                                 name="password"
                                 radius="md"
+                                onChange={(event) => setPassword(event.currentTarget.value)}
                             />
 
                             <PasswordInput
                                 required
                                 label="Repita a Senha"
                                 placeholder="Repita a Senha"
-                                name="password2"
                                 radius="md"
+                                onChange={(event) => setPassword2(event.currentTarget.value)}
                             />
-                            <TextInput
-                                
-                                label="Aprovador"
-                                placeholder="Aprovador"
-                                name="approver_id"
-                                radius="md"
-                            />
-                            <NativeSelect label="Regra de Usuário" required name='role'
+
+                            <Combobox
+                                store={combobox}
+                                onOptionSubmit={(val) => {
+                                    setSelectedApprover(val);
+                                    combobox.closeDropdown();
+                                }}
+                            >
+                                <Combobox.Target>
+                                    <InputBase
+                                        required
+                                        component="button"
+                                        type="button"
+                                        label="Aprovador"
+                                        pointer
+                                        rightSection={<Combobox.Chevron />}
+                                        rightSectionPointerEvents="none"
+                                        onClick={() => combobox.toggleDropdown()}
+                                    >
+                                        {selectedApprover || <Input.Placeholder>Selecione</Input.Placeholder>}
+                                    </InputBase>
+                                </Combobox.Target>
+
+                                <Combobox.Dropdown>
+                                    <Combobox.Options>{optionsApproverCombo}</Combobox.Options>
+                                </Combobox.Dropdown>
+                            </Combobox>
+                            <NativeSelect
+                                label="Regra de Usuário"
+                                required
+                                value={role}
                                 data={[
                                     { label: 'Usuário', value: "user" },
                                     { label: 'Administrador', value: "admin" },
                                     { label: 'Aprovador', value: "approver" }
-                                ]} />
+                                ]} 
+                                onChange={(e) => setRole(e.currentTarget.value)}
+                                />
 
                         </Stack>
 
                         <Group justify="space-between" mt="xl">
 
-                            <Button type="submit" radius="xl">
+                            <Button onClick={createUser} radius="xl">
                                 Registrar
                             </Button>
                         </Group>
-                    </form>
+                    </div>
                 </Paper>
             </Center>
         </div>
