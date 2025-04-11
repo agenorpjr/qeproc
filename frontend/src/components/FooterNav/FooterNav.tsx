@@ -19,24 +19,9 @@ const FooterNav = () => {
   const { colorScheme } = useMantineColorScheme();
   const mobile_match = useMediaQuery('(max-width: 425px)');
 
-  const BUTTON_PROPS: ButtonProps = {
-    variant: 'subtle',
-    style: {
-      padding: `${rem(8)} ${rem(12)}`,
-      color: colorScheme === 'dark' ? theme.white : theme.black,
-
-      '&:hover': {
-        transition: 'all ease 150ms',
-        backgroundColor:
-          colorScheme === 'dark' ? theme.colors.dark[5] : theme.colors.gray[2],
-        textDecoration: 'none',
-      },
-    },
-  };
-
   return (
     <Group justify="space-between">
-      {mobile_match ? (
+      {/* {mobile_match ? (
         <Menu shadow="md" width={200} position="right-end">
           <Menu.Target>
             <ActionIcon>
@@ -58,7 +43,7 @@ const FooterNav = () => {
           <Button {...BUTTON_PROPS}>Privacidade</Button>
           <Button {...BUTTON_PROPS}>Termos de Uso</Button>
         </Group>
-      )}
+      )} */}
       <Text
         c="dimmed"
         fz="sm"
@@ -66,7 +51,7 @@ const FooterNav = () => {
         href={PATH_GITHUB.org}
         target="_blank"
       >
-        &copy;&nbsp;{new Date().getFullYear()}&nbsp;Agenor Corp
+        &copy;&nbsp;{new Date().getFullYear()}&nbsp;Sistemas de Compras Quanta
       </Text>
     </Group>
   );

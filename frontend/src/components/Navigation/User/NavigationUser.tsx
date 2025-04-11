@@ -3,13 +3,14 @@ import { useEffect } from 'react';
 import { ActionIcon, Box, Flex, Group, ScrollArea, Text } from '@mantine/core';
 import { useMediaQuery } from '@mantine/hooks';
 import {
+  IconBasketCog,
   IconCalendar,
   IconClipboardPlus,
-  IconFolderQuestion,
-  IconFoldersFilled,
+  IconKeyFilled,
   IconLayoutDashboardFilled,
   IconListDetails,
-  IconUserCode,
+  IconShoppingBagCheck,
+  IconShoppingBagExclamation,
   IconX,
 } from '@tabler/icons-react';
 
@@ -19,16 +20,30 @@ import { LinksGroup } from '@/components/Navigation/User/Links/Links';
 
 import classes from '../Navigation.module.css';
 import { useSession } from 'next-auth/react';
-import { redirect } from 'next/navigation';
 
 const mockdata = [
   {
     links: [
       { label: 'Dashboard', icon: IconLayoutDashboardFilled, link: '/user/dashboard' },
-      { label: 'Minhas Requisições', icon: IconFoldersFilled, link: "/user/orders"},
-      { label: 'Minhas Solicitações', icon: IconFolderQuestion, link: "/user/drafts" },
+      { label: 'Minhas Requisições', icon: IconShoppingBagCheck, link: "/user/orders"},
+      { label: 'Minhas Solicitações', icon: IconBasketCog, link: "/user/drafts" },
       { label: 'Nova Solicitação', icon: IconClipboardPlus, link: "/user/order" },
-      { label: 'Configurações', icon: IconUserCode, link: '/user/settings' },
+      { label: 'Trocar Senha', icon: IconKeyFilled, link: '/user/settings' },
+      { label: 'Tasks', icon: IconListDetails, link: '/user' },
+      { label: 'Calendar', icon: IconCalendar, link: '/user' },
+    ],
+  }
+];
+
+const mockapproverdata = [
+  {
+    links: [
+      { label: 'Dashboard', icon: IconLayoutDashboardFilled, link: '/user/dashboard' },
+      { label: 'Requisições para Aprovar', icon: IconShoppingBagExclamation, link: "/user/approveorders"},
+      { label: 'Minhas Requisições', icon: IconShoppingBagCheck, link: "/user/orders"},
+      { label: 'Minhas Solicitações', icon: IconBasketCog, link: "/user/drafts" },
+      { label: 'Nova Solicitação', icon: IconClipboardPlus, link: "/user/order" },
+      { label: 'Trocar Senha', icon: IconKeyFilled, link: '/user/settings' },
       { label: 'Tasks', icon: IconListDetails, link: '/user' },
       { label: 'Calendar', icon: IconCalendar, link: '/user' },
     ],
@@ -51,6 +66,35 @@ const NavigationUser = ({
   const { data: session } = useSession()
 
   const links = mockdata.map((m) => (
+    <Box key={m.title} pl={0} mb={sidebarState === 'mini' ? 0 : 'md'}>
+      {sidebarState !== 'mini' && (
+        <Text
+          tt="uppercase"
+          size="xs"
+          pl="md"
+          fw={500}
+          mb="sm"
+          className={classes.linkHeader}
+        >
+          {m.title}
+        </Text>
+      )}
+      {m.links.map((item) => (
+        <LinksGroup
+          key={item.label}
+          {...item}
+          isMini={sidebarState === 'mini'}
+          closeSidebar={() => {
+            setTimeout(() => {
+              onClose();
+            }, 250);
+          }}
+        />
+      ))}
+    </Box>
+  ));
+
+  const linksapprover = mockapproverdata.map((m) => (
     <Box key={m.title} pl={0} mb={sidebarState === 'mini' ? 0 : 'md'}>
       {sidebarState !== 'mini' && (
         <Text
@@ -105,7 +149,7 @@ const NavigationUser = ({
 
       <ScrollArea className={classes.links}>
         <div className={classes.linksInner} data-sidebar-state={sidebarState}>
-          {links}
+          {session?.user?.approver === 0 ? links : linksapprover}
         </div>
       </ScrollArea>
 

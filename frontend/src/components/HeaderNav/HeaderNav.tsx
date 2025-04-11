@@ -3,9 +3,11 @@
 import {
   ActionIcon,
   Burger,
+  Flex,
   Group,
   Menu,
   TextInput,
+  Title,
   Tooltip,
   rem,
   useMantineColorScheme,
@@ -52,21 +54,24 @@ function HeaderNav(props: HeaderNavProps) {
           size="sm"
         />
         {/*<Burger opened={desktopOpened} onClick={toggleDesktop} visibleFrom="md" size="sm"/>*/}
-        {!mobile_match && (
+        {/* {!mobile_match && (
           <TextInput
             placeholder="search"
             rightSection={<IconSearch size={ICON_SIZE} />}
             ml="md"
             style={{ width: tablet_match ? 'auto' : rem(400) }}
           />
-        )}
+        )} */}
+        <Flex>
+          <Title order={4} ml='md' c='blue.9'>Sistemas de Compras Quanta</Title>
+        </Flex>
       </Group>
       <Group>
-        {mobile_match && (
+        {/* {mobile_match && (
           <ActionIcon>
             <IconSearch size={ICON_SIZE} />
           </ActionIcon>
-        )}
+        )} */}
         <Tooltip label="Logout">
           <ActionIcon onClick={() => {SignOutF()}}>
             <IconPower size={ICON_SIZE} />
@@ -88,19 +93,19 @@ function HeaderNav(props: HeaderNavProps) {
           </Menu.Target>
           <Menu.Dropdown>
             <Menu.Label tt="uppercase" ta="center" fw={600}>
-              Select color modes
+              Selecione Modo de Cores
             </Menu.Label>
             <Menu.Item
               leftSection={<IconSunHigh size={16} />}
               onClick={() => setColorScheme('light')}
             >
-              Light
+              Claro
             </Menu.Item>
             <Menu.Item
               leftSection={<IconMoonStars size={16} />}
               onClick={() => setColorScheme('dark')}
             >
-              Dark
+              Escuro
             </Menu.Item>
           </Menu.Dropdown>
         </Menu>

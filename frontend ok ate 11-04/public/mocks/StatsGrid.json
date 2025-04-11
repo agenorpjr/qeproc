@@ -1,0 +1,28 @@
+{
+  "data": [
+    {
+      "title": "Meus Pedidos",
+      "icon": "receipt",
+      "value": "13,456",
+      "diff": 34,
+      "period": "total",
+      "color": "indigo"
+    },
+    {
+      "title": "Pedidos",
+      "icon": "coin",
+      "value": "4,145",
+      "diff": -13,
+      "period": "abertos",
+      "color": "red"
+    },
+    {
+      "title": "Pedidos",
+      "icon": "coin",
+      "value": "7,825",
+      "diff": -13,
+      "period": "fechados",
+      "color": "green"
+    }
+  ]
+}

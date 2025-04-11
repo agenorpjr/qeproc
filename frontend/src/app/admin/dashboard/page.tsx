@@ -16,7 +16,6 @@ import Link from 'next/link';
 import {
   PageHeader,
 } from '@/components';
-import { useFetchData } from '@/hooks';
 import { PATH_TASKS } from '@/routes';
 import { useSession } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
@@ -48,15 +47,6 @@ function Page() {
           <PageHeader title="Admin dashboard" withActions={true} />
           
           <Grid gutter={{ base: 5, xs: 'md', md: 'xl', xl: 50 }}>
-            {/* <Grid.Col span={8}>
-              <RevenueChart {...PAPER_PROPS} />
-            </Grid.Col> */}
-            {/* <Grid.Col span={4}>
-              <SalesChart {...PAPER_PROPS} />
-            </Grid.Col> */}
-            {/* <Grid.Col span={4}>
-              <MobileDesktopChart {...PAPER_PROPS} />
-            </Grid.Col> */}
             <Grid.Col span={12}>
               <Paper {...PAPER_PROPS}>
                 <Group justify="space-between" mb="md">
@@ -72,12 +62,6 @@ function Page() {
                     View all
                   </Button>
                 </Group>
-                {/* <ProjectsTable
-                  data={projectsData.slice(0, 6)}
-                  error={projectsError}
-                  loading={projectsLoading}
-                /> */}
-
               </Paper>
             </Grid.Col>
           </Grid>
