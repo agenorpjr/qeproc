@@ -9,7 +9,7 @@ import { useSession } from 'next-auth/react';
 import dayjs from 'dayjs';
 import { ActionIcon, Box, Button, Card, Pill, Divider, Flex, Grid, Group, Modal, Stack, Title, Text, Tooltip, TextInput, NumberInput, Center } from '@mantine/core';
 
-import classes from './orders.module.css'
+import classes from './approveorders.module.css'
 import { IconAdjustments, IconEdit, IconSearch, IconX } from '@tabler/icons-react';
 import { useDisclosure, useDebouncedValue } from '@mantine/hooks';
 import Loading from '@/app/loading';
@@ -60,7 +60,7 @@ export default function OrdersApproverPage() {
   const [orderNumberQuery] = useDebouncedValue(orderNumber, 200)
 
   useEffect(() => {
-    
+
     orders()
   }, [sortStatus, deliveryAddressQuery, nameQuery, companyQuery, orderNumberQuery]);
 
@@ -232,18 +232,6 @@ export default function OrdersApproverPage() {
             render: ({ created_at }) => dayjs(created_at).format("DD/MM/YYYY")
           },
           {
-            accessor: 'delivery_expected',
-            textAlign: 'right',
-            sortable: true,
-            width: '10%',
-            title: (
-              <Flex justify="center">
-                <Title order={6} textWrap="wrap">Entrega Prevista</Title>
-              </Flex>
-            ),
-            render: ({ delivery_expected }) => delivery_expected ? dayjs(delivery_expected).format("DD/MM/YYYY") : null
-          },
-          {
             accessor: 'status',
             title: <Box mr={6}>Status</Box>,
             textAlign: 'center',
@@ -253,11 +241,12 @@ export default function OrdersApproverPage() {
               clsx({
                 [classes.cellaprov]: status === "Em Aprovação",
                 [classes.cellcot]: status === "Em Cotação",
-                [classes.cellreq]: status === "Requisição Aprovada",
+                [classes.cellreqaprov]: status === "Requisição Aprovada",
                 [classes.cellcancel]: status === "Cancelada",
-                [classes.cellsolic]: status === "Pedido Aprovado",
+                [classes.cellpedconf]: status === "Pedido Confirmado",
                 [classes.cellfinanc]: status === "Aprov. Financeira",
                 [classes.celluser]: status === "Análise Usuário",
+                [classes.cellentregue]: status === "Pedido Entregue",
               }),
             render: (record) => (
               <Text size='xs'>{record.status}</Text>
@@ -298,18 +287,26 @@ export default function OrdersApproverPage() {
             <Stack className={classes.details} p="xs" gap={6}>
               <Card shadow="sm" padding="md" radius="md" withBorder className={classes.card}>
                 <Grid maw="80vw">
-                  <Grid.Col span={6}><Text fw={700} size='xs'>PRODUTO</Text></Grid.Col>
-                  <Grid.Col span={3}><Text fw={700} size='xs'>QUANTIDADE</Text></Grid.Col>
-                  <Grid.Col span={3}><Text fw={700} size='xs'>MEDIDA</Text></Grid.Col>
+                  <Grid.Col span={3}><Text fw={700} size='xs'>PRODUTO</Text></Grid.Col>
+                  <Grid.Col span={1}><Text fw={700} size='xs'>QUANTIDADE</Text></Grid.Col>
+                  <Grid.Col span={1}><Text fw={700} size='xs'>MEDIDA</Text></Grid.Col>
+                  <Grid.Col span={2}><Text fw={700} size='xs'>FORNECEDOR</Text></Grid.Col>
+                  <Grid.Col span={1}><Text fw={700} size='xs'>Nº PEDIDO</Text></Grid.Col>
+                  <Grid.Col span={1}><Text fw={700} size='xs'>VALOR</Text></Grid.Col>
+                  <Grid.Col span={2}><Text fw={700} size='xs'>ENTREGA PREVISTA</Text></Grid.Col>
                 </Grid>
                 <Divider my="md" />
                 {record.order_products_list.map((item) => {
                   return (
                     <>
-                      <Grid maw="80vw">
-                        <Grid.Col span={6}><Text size='xs'>{item.products.description}</Text></Grid.Col>
-                        <Grid.Col span={3}><Text size='xs'>{item.quantity}</Text></Grid.Col>
-                        <Grid.Col span={3}><Text size='xs'>{item.measures.measure}</Text></Grid.Col>
+                      <Grid maw="90vw">
+                        <Grid.Col span={3}><Text size='xs'>{item.products.description}</Text></Grid.Col>
+                        <Grid.Col span={1}><Text size='xs'>{item.quantity}</Text></Grid.Col>
+                        <Grid.Col span={1}><Text size='xs'>{item.measures.measure}</Text></Grid.Col>
+                        <Grid.Col span={2}><Text size='xs'>{item?.suppliers?.supplier ? item.suppliers.supplier : ''}</Text></Grid.Col>
+                        <Grid.Col span={1}><Text size='xs'>{item?.purchase_number ? item.purchase_number : ''}</Text></Grid.Col>
+                        <Grid.Col span={1}><Text size='xs'>{item?.amount ? `R$ ${item.amount.toString().replace('.', ',')}` : ''}</Text></Grid.Col>
+                        <Grid.Col span={2}><Text size='xs'>{item.delivery_expected ? dayjs(item.delivery_expected).format("DD/MM/YYYY") : ''}</Text></Grid.Col>
                         {item.obs.length > 0 ? <Grid.Col span={12}>
                           <Flex gap='md'>
                             <Text size='xs' fw={700}>Observação: </Text>

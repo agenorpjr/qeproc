@@ -244,6 +244,15 @@ export default function EditProduct({ dataprod, upDataDP }) {
                 })
                 throw new Error
               }
+              if (reference && reference.slice(0, 4) !== 'http') {
+                notifications.show({
+                  title: "ERRO EM REFERÊNCIA",
+                  message: "Favor colocar um link válido para a Referência",
+                  position: 'top-center',
+                  color: 'red',
+                })
+                throw new Error
+              }
               editProductDraftList()
               stack.close('editproduct')
             }}

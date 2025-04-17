@@ -11,8 +11,10 @@ export default async function actionCopyOrder(data: any) {
         delivery_address: data.delivery_address,
         cost_center_id: data.cost_center_id,
         delivery_at: data.delivery_at,
-        project_id: data.project_id
+        project_id: data.project_id,
+        approver_id: data.approver_id
     }
+    
     const updateValues = await updateDraft(values, latestQuerynumber)
     
     const final = async () => {

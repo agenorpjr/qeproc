@@ -25,37 +25,42 @@
 }
 
 .cellaprov {
-  background-color: teal;
+  background-color: var(--mantine-color-green-5);
   color: white;
 }
 
 .cellcot {
-  background-color: #b87700;
+  background-color: var(--mantine-color-orange-5);
   color: white;
 }
 
-.cellreq {
-  background-color: #0990ff;
+.cellreqaprov {
+  background-color: var(--mantine-color-blue-5);
   color: white;
 }
 
 .cellcancel {
-  background-color: #ff0909;
+  background-color: var(--mantine-color-red-5);
   color: white;
 }
 
-.cellsolic {
-  background-color: #00b63d;
+.cellpedconf {
+  background-color: var(--mantine-color-teal-5);
   color: white;
 }
 
 .cellfinanc {
-  background-color: #998200;
+  background-color: var(--mantine-color-grape-5);
   color: white;
 }
 
 .celluser {
-  background-color: #8b0062;
+  background-color: var(--mantine-color-pink-5);
+  color: white;
+}
+
+.cellentregue {
+  background-color: var(--mantine-color-indigo-7);
   color: white;
 }
 

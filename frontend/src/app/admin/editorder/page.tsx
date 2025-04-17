@@ -5,7 +5,6 @@ import {
     Grid,
     Button,
     Divider,
-    ActionIcon,
     Group,
     Box,
     Stack,
@@ -16,8 +15,9 @@ import {
     Input,
     Title,
     NativeSelect,
+    Anchor,
 } from "@mantine/core"
-import { DatePickerInput } from "@mantine/dates";
+
 import 'dayjs/locale/pt-br';
 
 import { DataTable, type DataTableSortStatus } from 'mantine-datatable';
@@ -27,12 +27,10 @@ import { useSession } from "next-auth/react";
 import { redirect, useSearchParams, useRouter, usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
 
-import { getOrderProducts, createOrder, getOrderNumber, getApproverByUserId, updateOrderProductsList, getOrderById, getUsers, getUserById, getPurchasers, updateOrderByAdmin, getUserByName } from "@/lib/orders/getOrderData";
-import { IconEdit, IconTrash } from "@tabler/icons-react";
+import { getApproverByUserId, getOrderById, getUserById, getPurchasers, updateOrderByAdmin, getUserByName } from "@/lib/orders/getOrderData";
+
 import { notifications } from "@mantine/notifications";
 import Loading from "@/app/loading";
-import EditProduct from "@/components/EditProduct/page";
-import actionSaveOrder from "@/lib/actionSaveOrder";
 import EditProductOrder from "@/components/EditProductOrder/page";
 
 export default function EditOrdertPage() {
@@ -74,6 +72,7 @@ export default function EditOrdertPage() {
         const app = await getApproverByUserId(res?.approver_id)
         const purc = await getPurchasers()
         const purcname = await getUserById(res?.purchaser)
+        console.log('fodaaa', res)
         setPurchasers(purc)
         setPurchaser(purcname.name)
         setApproverName(app?.name)
@@ -228,10 +227,12 @@ export default function EditOrdertPage() {
                             onChange={(event) => setOrderStatus(event.currentTarget.value)}
                             data={[
                                 'Em Cotação',
-                                'Requisição Aprovada',
-                                'Cancelada',
                                 'Aprov. Financeira',
-                                'Análise Usuário'
+                                'Análise Usuário',
+                                'Pedido Confirmado',
+                                'Pedido Entregue',
+                                'Cancelada',
+                                'Em Aprovação'
                             ]}
                         />
                     </Grid.Col>
@@ -300,6 +301,8 @@ export default function EditOrdertPage() {
                                 {
                                     accessor: 'actions',
                                     title: <Box mr={6}>Editar</Box>,
+                                    titleClassName: classes.actions,
+                                    cellsClassName: classes.actions,
                                     textAlign: 'right',
                                     width: '0%',
                                     render: (record) => (
@@ -311,17 +314,24 @@ export default function EditOrdertPage() {
                             ]}
                             rowExpansion={{
                                 content: ({ record }) => (
-                                    <Stack className={classes.details} p="xs" gap={6}>
-                                        <Group gap={6}>
-                                            <div className={classes.label}>Observações:</div>
-                                            <div>
-                                                {record.obs}
-                                            </div>
-                                        </Group>
-                                        <Group gap={6}>
-                                            <div className={classes.label}>Referência:</div>
-                                            <Box fs="italic">{record.reference}</Box>
-                                        </Group>
+                                    <Stack className={classes.details} p="md" gap={10}>
+                                        {record.obs.length > 0 ?
+                                            <Flex gap='md'>
+                                                <Text size='xs' fw={700}>Observação: </Text>
+                                                <Text size='xs'>{record.obs}</Text>
+                                            </Flex> : <></>}
+                                        {record.reference.length > 0 ?
+                                            <Flex gap='md' align='center'>
+                                                <Text size='xs' fw={700}>Referência: </Text>
+                                                <Anchor
+                                                    fz='sm'
+                                                    c='black'
+                                                    underline="always"
+                                                    href={record.reference}
+                                                    target='_blank'
+                                                >Link para Referência
+                                                </Anchor>
+                                            </Flex> : <></>}
                                     </Stack>
                                 )
                             }}
@@ -329,7 +339,7 @@ export default function EditOrdertPage() {
                             striped
                             highlightOnHover
                             withTableBorder
-                            pinLastColumn
+                            //pinLastColumn
                             withColumnBorders
                             borderRadius="sm"
                             idAccessor="products.product_id"

@@ -3,14 +3,14 @@
 import { DataTable, type DataTableSortStatus } from 'mantine-datatable';
 import sortBy from 'lodash/sortBy';
 import { useEffect, useState } from 'react';
-import { deleteOrderById, deleteOrderProduct, getAllOrders, getOrders, getOrdersProducts } from '@/lib/orders/getOrderData';
+import { getAllOrders } from '@/lib/orders/getOrderData';
 import { redirect, useRouter } from 'next/navigation';
 import { useSession } from 'next-auth/react';
 import dayjs from 'dayjs';
-import { ActionIcon, Box, Button, Card, Pill, Divider, Flex, Grid, Group, Modal, Stack, Title, Text, Tooltip, TextInput, NumberInput, Center } from '@mantine/core';
+import { ActionIcon, Box, Button, Card, Divider, Flex, Grid, Group, Modal, Stack, Title, Text, Tooltip, TextInput, Anchor } from '@mantine/core';
 
 import classes from './orders.module.css'
-import { IconAdjustments, IconEdit, IconEye, IconSearch, IconTrash, IconX } from '@tabler/icons-react';
+import { IconAdjustments, IconEdit, IconSearch, IconX } from '@tabler/icons-react';
 import { useDisclosure, useDebouncedValue, useMediaQuery } from '@mantine/hooks';
 import Loading from '@/app/loading';
 import actionCopyOrder from '@/lib/actionCopyOrder';
@@ -32,6 +32,7 @@ export type Order = {
   status: string,
   draft_products_list: []
 }
+const PAGE_SIZE = 10;
 
 export default function OrdersPage() {
   const { data: session, status } = useSession()
@@ -40,7 +41,7 @@ export default function OrdersPage() {
   }
 
   const router = useRouter()
-
+  const [page, setPage] = useState(1);
   const [sortStatus, setSortStatus] = useState<DataTableSortStatus<Order>>({
     columnAccessor: 'order_number',
     direction: 'desc',
@@ -63,6 +64,8 @@ export default function OrdersPage() {
   useEffect(() => {
     const orders = async () => {
       try {
+        const from = (page - 1) * PAGE_SIZE;
+        const to = from + PAGE_SIZE;
         const res = await getAllOrders()
         setOrdersData(res)
         const data = sortBy(res.filter(({ delivery_address, User, companies, order_number }) => {
@@ -89,37 +92,11 @@ export default function OrdersPage() {
           return true
         }), sortStatus.columnAccessor) as Order[];
 
-        setRecords(sortStatus.direction === 'desc' ? data.reverse() : data);
+        setRecords(sortStatus.direction === 'desc' ? data.reverse().slice(from, to) : data.slice(from, to));
       } catch (err) { }
     }
     orders()
-  }, [sortStatus, deliveryAddressQuery, nameQuery, companyQuery, orderNumberQuery]);
-
-  const orderCopy = async (data: any) => {
-    const oc = await actionCopyOrder(data)
-      .then(() => {
-        router.push('/user/drafts')
-      })
-  }
-
-  // const deleteOrder = async (datadeletedraft: any) => {
-  //   const gdp = await getOrdersProducts(datadeletedraft)
-  //   const delprods = gdp.map(async (res) => {
-  //     await deleteOrderProduct(res.draft_product_list_id)
-  //   })
-
-  //   const res = await deleteOrderById(datadeletedraft)
-  //   updateOrders()
-  // }
-
-  // const updateOrders = async () => {
-  //   try {
-  //     const res = await getOrders(session?.user?.id)
-  //     setOrdersData(res)
-  //     const data = sortBy(res, sortStatus.columnAccessor) as Order[];
-  //     setRecords(sortStatus.direction === 'desc' ? data.reverse() : data);
-  //   } catch (err) { }
-  // }
+  }, [sortStatus, deliveryAddressQuery, nameQuery, companyQuery, orderNumberQuery, page]);
 
   if (status === 'loading') return <Loading />
 
@@ -231,18 +208,6 @@ export default function OrdersPage() {
             render: ({ created_at }) => dayjs(created_at).format("DD/MM/YYYY")
           },
           {
-            accessor: 'delivery_expected',
-            textAlign: 'right',
-            sortable: true,
-            width: '10%',
-            title: (
-              <Flex justify="center">
-                <Title order={6} textWrap="wrap">Entrega Prevista</Title>
-              </Flex>
-            ),
-            render: ({ delivery_expected }) => delivery_expected ? dayjs(delivery_expected).format("DD/MM/YYYY") : null
-          },
-          {
             accessor: 'status',
             title: <Box mr={6}>Status</Box>,
             textAlign: 'center',
@@ -252,11 +217,12 @@ export default function OrdersPage() {
               clsx({
                 [classes.cellaprov]: status === "Em Aprovação",
                 [classes.cellcot]: status === "Em Cotação",
-                [classes.cellreq]: status === "Requisição Aprovada",
+                [classes.cellreqaprov]: status === "Requisição Aprovada",
                 [classes.cellcancel]: status === "Cancelada",
-                [classes.cellsolic]: status === "Pedido Aprovado",
+                [classes.cellpedconf]: status === "Pedido Confirmado",
                 [classes.cellfinanc]: status === "Aprov. Financeira",
                 [classes.celluser]: status === "Análise Usuário",
+                [classes.cellentregue]: status === "Pedido Entregue",
               }),
             render: (record) => (
               <Text size='xs'>{record.status}</Text>
@@ -298,40 +264,46 @@ export default function OrdersPage() {
             <Stack className={classes.details} p="xs" gap={6}>
               <Card shadow="sm" padding="md" radius="md" withBorder className={classes.card}>
                 <Grid>
-                  <Grid.Col span={6}><Text fw={700} size='xs'>PRODUTO</Text></Grid.Col>
-                  <Grid.Col span={2}><Text fw={700} size='xs'>QUANTIDADE</Text></Grid.Col>
-                  <Grid.Col span={2}><Text fw={700} size='xs'>MEDIDA</Text></Grid.Col>
-                  <Grid.Col span={2}>
-                    <Flex justify="flex-end">
-                      <Tooltip label="Gerar Cópia da Requisição">
-                        <ActionIcon variant="filled" aria-label="Settings" onClick={() => orderCopy(record)}>
-                          <IconAdjustments style={{ width: '70%', height: '70%' }} stroke={1.5} />
-                        </ActionIcon>
-                      </Tooltip>
-                    </Flex>
-                  </Grid.Col>
+                  <Grid.Col span={3}><Text fw={700} size='xs'>PRODUTO</Text></Grid.Col>
+                  <Grid.Col span={1}><Text fw={700} size='xs'>QUANTIDADE</Text></Grid.Col>
+                  <Grid.Col span={1}><Text fw={700} size='xs'>MEDIDA</Text></Grid.Col>
+                  <Grid.Col span={2}><Text fw={700} size='xs'>FORNECEDOR</Text></Grid.Col>
+                  <Grid.Col span={1}><Text fw={700} size='xs'>Nº PEDIDO</Text></Grid.Col>
+                  <Grid.Col span={1}><Text fw={700} size='xs'>VALOR</Text></Grid.Col>
+                  <Grid.Col span={2}><Text fw={700} size='xs'>ENTREGA PREVISTA</Text></Grid.Col>
+
                 </Grid>
                 <Divider my="md" />
                 {record.order_products_list.map((item) => {
                   return (
                     <>
-                      <Grid maw="80vw">
-                        <Grid.Col span={6}><Text size='xs'>{item.products.description}</Text></Grid.Col>
-                        <Grid.Col span={2}><Text size='xs'>{item.quantity}</Text></Grid.Col>
-                        <Grid.Col span={2}><Text size='xs'>{item.measures.measure}</Text></Grid.Col>
+                      <Grid maw="90vw">
+                        <Grid.Col span={3}><Text size='sm' fw={700}>{item.products.description}</Text></Grid.Col>
+                        <Grid.Col span={1}><Text size='sm' fw={700}>{item.quantity}</Text></Grid.Col>
+                        <Grid.Col span={1}><Text size='sm' fw={700}>{item.measures.measure}</Text></Grid.Col>
+                        <Grid.Col span={2}><Text size='sm' fw={700}>{item?.suppliers?.supplier ? item.suppliers.supplier : ''}</Text></Grid.Col>
+                        <Grid.Col span={1}><Text size='sm' fw={700}>{item?.purchase_number ? item.purchase_number : ''}</Text></Grid.Col>
+                        <Grid.Col span={1}><Text size='sm' fw={700}>{item?.amount ? `R$ ${item.amount.toString().replace('.', ',')}` : ''}</Text></Grid.Col>
+                        <Grid.Col span={2}><Text size='sm' fw={700}>{item.delivery_expected ? dayjs(item.delivery_expected).format("DD/MM/YYYY") : ''}</Text></Grid.Col>
                         {item.obs.length > 0 ? <Grid.Col span={12}>
-                          <Flex gap='md'>
+                          <Flex gap='md' align='center' ml={20}>
                             <Text size='xs' fw={700}>Observação: </Text>
                             <Text size='xs'>{item.obs}</Text>
                           </Flex>
                         </Grid.Col> : <></>}
                         {item.reference.length > 0 ? <Grid.Col span={12}>
-                          <Flex gap='md'>
+                          <Flex gap='md' align='center' ml={20}>
                             <Text size='xs' fw={700}>Referência: </Text>
-                            <Text size='xs'>{item.reference}</Text>
+                            <Anchor
+                              fz='sm'
+                              c='black'
+                              underline="always"
+                              href={item.reference}
+                              target='_blank'
+                            >Link para Referência
+                            </Anchor>
                           </Flex>
                         </Grid.Col> : <></>}
-
                       </Grid>
                       <Divider my="sm" />
                     </>
@@ -341,6 +313,10 @@ export default function OrdersPage() {
             </Stack>
           )
         }}
+        totalRecords={ordersData.length}
+        recordsPerPage={PAGE_SIZE}
+        page={page}
+        onPageChange={(p) => setPage(p)}
 
       />
       <Modal

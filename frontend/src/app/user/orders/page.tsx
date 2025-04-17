@@ -3,14 +3,27 @@
 import { DataTable, type DataTableSortStatus } from 'mantine-datatable';
 import sortBy from 'lodash/sortBy';
 import { useEffect, useState } from 'react';
-import { deleteOrderById, deleteOrderProduct, getOrders, getOrdersProducts } from '@/lib/orders/getOrderData';
+import { getOrders, updateStatus } from '@/lib/orders/getOrderData';
 import { redirect, useRouter } from 'next/navigation';
 import { useSession } from 'next-auth/react';
 import dayjs from 'dayjs';
-import { ActionIcon, Box, Button, Card, Pill, Divider, Flex, Grid, Group, Modal, Stack, Title, Text, Tooltip } from '@mantine/core';
+import {
+  ActionIcon,
+  Box,
+  Button,
+  Card,
+  Divider,
+  Flex,
+  Grid,
+  Stack,
+  Title,
+  Text,
+  Tooltip,
+  Anchor
+} from '@mantine/core';
 
 import classes from './orders.module.css'
-import { IconAdjustments, IconEdit, IconEye, IconTrash } from '@tabler/icons-react';
+import { IconAdjustments } from '@tabler/icons-react';
 import { useDisclosure } from '@mantine/hooks';
 import Loading from '@/app/loading';
 import actionCopyOrder from '@/lib/actionCopyOrder';
@@ -51,16 +64,18 @@ export default function OrdersPage() {
   const [draftTemp, setOrderTemp] = useState(null)
 
   useEffect(() => {
-    const orders = async () => {
-      try {
-        const res = await getOrders(session?.user?.id)
-        setOrdersData(res)
-        const data = sortBy(res, sortStatus.columnAccessor) as Order[];
-        setRecords(sortStatus.direction === 'desc' ? data.reverse() : data);
-      } catch (err) { }
-    }
+
     orders()
   }, [sortStatus, session?.user?.id]);
+
+  const orders = async () => {
+    try {
+      const res = await getOrders(session?.user?.id)
+      setOrdersData(res)
+      const data = sortBy(res, sortStatus.columnAccessor) as Order[];
+      setRecords(sortStatus.direction === 'desc' ? data.reverse() : data);
+    } catch (err) { }
+  }
 
   const orderCopy = async (data: any) => {
     const oc = await actionCopyOrder(data)
@@ -69,24 +84,14 @@ export default function OrdersPage() {
       })
   }
 
-  // const deleteOrder = async (datadeletedraft: any) => {
-  //   const gdp = await getOrdersProducts(datadeletedraft)
-  //   const delprods = gdp.map(async (res) => {
-  //     await deleteOrderProduct(res.draft_product_list_id)
-  //   })
-
-  //   const res = await deleteOrderById(datadeletedraft)
-  //   updateOrders()
-  // }
-
-  // const updateOrders = async () => {
-  //   try {
-  //     const res = await getOrders(session?.user?.id)
-  //     setOrdersData(res)
-  //     const data = sortBy(res, sortStatus.columnAccessor) as Order[];
-  //     setRecords(sortStatus.direction === 'desc' ? data.reverse() : data);
-  //   } catch (err) { }
-  // }
+  const confirmDelivery = async (record: any) => {
+    const data = {
+      order_id: record.order_id,
+      status: 'Pedido Entregue'
+    }
+    const cd = await updateStatus(data)
+    orders()
+  }
 
   if (status === 'loading') return <Loading />
 
@@ -112,14 +117,6 @@ export default function OrdersPage() {
             render: ({ delivery_at }) => delivery_at ? dayjs(delivery_at).format("DD/MM/YYYY") : null
           },
           {
-            accessor: 'delivery_expected',
-            textAlign: 'right',
-            sortable: true,
-            width: '10%',
-            title: "Entrega Prevista",
-            render: ({ delivery_expected }) => delivery_expected ? dayjs(delivery_expected).format("DD/MM/YYYY") : null
-          },
-          {
             accessor: 'created_at',
             textAlign: 'right',
             sortable: true,
@@ -133,18 +130,19 @@ export default function OrdersPage() {
             textAlign: 'center',
             width: '0%',
             sortable: true,
-            cellsClassName:({ status }) => 
+            cellsClassName: ({ status }) =>
               clsx({
                 [classes.cellaprov]: status === "Em Aprovação",
                 [classes.cellcot]: status === "Em Cotação",
-                [classes.cellreq]: status === "Requisição Aprovada",
+                [classes.cellreqaprov]: status === "Requisição Aprovada",
                 [classes.cellcancel]: status === "Cancelada",
-                [classes.cellsolic]: status === "Pedido Aprovado",
+                [classes.cellpedconf]: status === "Pedido Confirmado",
                 [classes.cellfinanc]: status === "Aprov. Financeira",
                 [classes.celluser]: status === "Análise Usuário",
+                [classes.cellentregue]: status === "Pedido Entregue",
               }),
             render: (record) => (
-                <Text size='xs'>{record.status}</Text>
+              <Text size='xs'>{record.status}</Text>
             )
           }
         ]}
@@ -156,10 +154,14 @@ export default function OrdersPage() {
             <Stack className={classes.details} p="xs" gap={6}>
               <Card shadow="sm" padding="md" radius="md" withBorder className={classes.card}>
                 <Grid>
-                  <Grid.Col span={6}><Text fw={700} size='xs'>PRODUTO</Text></Grid.Col>
-                  <Grid.Col span={2}><Text fw={700} size='xs'>QUANTIDADE</Text></Grid.Col>
-                  <Grid.Col span={2}><Text fw={700} size='xs'>MEDIDA</Text></Grid.Col>
-                  <Grid.Col span={2}>
+                  <Grid.Col span={3}><Text fw={700} size='xs'>PRODUTO</Text></Grid.Col>
+                  <Grid.Col span={1}><Text fw={700} size='xs'>QUANTIDADE</Text></Grid.Col>
+                  <Grid.Col span={1}><Text fw={700} size='xs'>MEDIDA</Text></Grid.Col>
+                  <Grid.Col span={2}><Text fw={700} size='xs'>FORNECEDOR</Text></Grid.Col>
+                  <Grid.Col span={1}><Text fw={700} size='xs'>Nº PEDIDO</Text></Grid.Col>
+                  <Grid.Col span={1}><Text fw={700} size='xs'>VALOR</Text></Grid.Col>
+                  <Grid.Col span={2}><Text fw={700} size='xs'>ENTREGA PREVISTA</Text></Grid.Col>
+                  <Grid.Col span={1}>
                     <Flex justify="flex-end">
                       <Tooltip label="Gerar Cópia da Requisição">
                         <ActionIcon variant="filled" aria-label="Settings" onClick={() => orderCopy(record)}>
@@ -174,51 +176,58 @@ export default function OrdersPage() {
                   return (
                     <>
                       <Grid>
-                        <Grid.Col span={6}><Text size='xs'>{item.products.description}</Text></Grid.Col>
-                        <Grid.Col span={2}><Text size='xs'>{item.quantity}</Text></Grid.Col>
-                        <Grid.Col span={2}><Text size='xs'>{item.measures.measure}</Text></Grid.Col>
+                        <Grid.Col span={3}><Text size='xs'>{item.products.description}</Text></Grid.Col>
+                        <Grid.Col span={1}><Text size='xs'>{item.quantity}</Text></Grid.Col>
+                        <Grid.Col span={1}><Text size='xs'>{item.measures.measure}</Text></Grid.Col>
+                        <Grid.Col span={2}><Text size='xs'>{item?.suppliers?.supplier ? item.suppliers.supplier : ''}</Text></Grid.Col>
+                        <Grid.Col span={1}><Text size='xs'>{item?.purchase_number ? item.purchase_number : ''}</Text></Grid.Col>
+                        <Grid.Col span={1}><Text size='xs'>{item?.amount ? `R$ ${item.amount.toString().replace('.', ',')}` : ''}</Text></Grid.Col>
+                        <Grid.Col span={2}><Text size='xs'>{item.delivery_expected ? dayjs(item.delivery_expected).format("DD/MM/YYYY") : ''}</Text></Grid.Col>
+                        {item.obs.length > 0 ? <Grid.Col span={12}>
+                          <Flex gap='md'>
+                            <Text size='xs' fw={700}>Observação: </Text>
+                            <Text size='xs'>{item.obs}</Text>
+                          </Flex>
+                        </Grid.Col> : <></>}
+                        {item.reference.length > 0 ? <Grid.Col span={12}>
+                          <Flex gap='md' align='center'>
+                            <Text size='xs' fw={700}>Referência: </Text>
+                            <Anchor
+                              fz='sm'
+                              c='black'
+                              underline="always"
+                              href={item.reference}
+                              target='_blank'
+                            >Link para Referência
+                            </Anchor>
+                          </Flex>
+                        </Grid.Col> : <></>}
                       </Grid>
                       <Divider my="sm" />
                     </>
                   )
                 })}
+                {record.status === 'Pedido Confirmado' ?
+                  <Grid>
+                    <Grid.Col span={12}>
+                      <Flex justify="flex-end">
+                        <Button
+                          size='xs'
+                          variant='filled'
+                          c='white'
+                          color='teal'
+                          onClick={() => confirmDelivery(record)}
+                        >
+                          Confirmar Entrega do Pedido
+                        </Button>
+                      </Flex>
+                    </Grid.Col>
+                  </Grid> : <></>}
               </Card>
             </Stack>
           )
         }}
-
       />
-      <Modal
-        opened={modalDelete}
-        onClose={close}
-        title="ATENÇÃO! Tem certeza que deseja excluir?"
-        overlayProps={{
-          backgroundOpacity: 0.55,
-          blur: 3,
-        }}
-      >
-        <Grid mt={20}>
-          <Grid.Col span={4} >
-            <Button size="md" fullWidth onClick={() => {
-              setOrderTemp(null)
-              close()
-            }}>Cancelar</Button>
-
-          </Grid.Col>
-          <Grid.Col span={4}>
-            <Button fullWidth size="md" color='red'
-              onClick={() => {
-                deleteOrder(draftTemp)
-                setOrderTemp(null)
-                close()
-              }}
-            >Excluir</Button>
-
-          </Grid.Col>
-
-
-        </Grid>
-      </Modal>
     </>
   );
 }

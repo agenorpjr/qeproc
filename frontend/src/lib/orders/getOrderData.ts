@@ -64,15 +64,28 @@ export async function getApprovers() {
     return approvers
 }
 
+
+//===============================================================================
+// COMPANIES
+//===============================================================================
 export async function getCompanies() {
     const companies = await db.companies.findMany()
     return companies
 }
+
+//===============================================================================
+// DELIVERIES
+//===============================================================================
+
 export async function getDeliveries() {
     const deliveries = await db.delivery_addresses.findMany()
     return deliveries
 }
 
+
+//===============================================================================
+// PROJECTS
+//===============================================================================
 export async function getProjects() {
     const projects = await db.projects.findMany()
     return projects
@@ -113,6 +126,18 @@ export async function getSupplierByName(suppname: string) {
     return supplier
 }
 
+export async function addSupplier(data: any) {
+    const addsup = await db.suppliers.create({
+        data: {
+            supplier: data.supplier,
+            cnpj: data.cnpj
+        }
+    })
+}
+
+//===============================================================================
+// PRODUCTS
+//===============================================================================
 
 export async function getProducts() {
     const products = await db.products.findMany({
@@ -123,6 +148,7 @@ export async function getProducts() {
     revalidatePath("/user/order")
     return products
 }
+
 
 
 
@@ -211,7 +237,12 @@ export async function getDraftNumber() {
         },
         take: 1,
     })
-    return draft[0].draft_number
+    if (draft.length > 0) {
+        return draft[0].draft_number
+    } else {
+        return "S-0"
+    }
+    
 }
 
 
@@ -390,7 +421,8 @@ export async function getOrders(user_id: string) {
             order_products_list: {
                 include: {
                     products: true,
-                    measures: true
+                    measures: true,
+                    suppliers: true,
                 }
             },
             cost_centers: true,
@@ -428,7 +460,8 @@ export async function getAllOrders() {
             order_products_list: {
                 include: {
                     products: true,
-                    measures: true
+                    measures: true,
+                    suppliers: true,
                 }
             },
             cost_centers: true,
@@ -449,7 +482,8 @@ export async function getOrdersByApprover(approverId) {
             order_products_list: {
                 include: {
                     products: true,
-                    measures: true
+                    measures: true,
+                    suppliers: true,
                 }
             },
             cost_centers: true,
@@ -485,6 +519,17 @@ export async function updateOrderByAdmin(uporder: any) {
         data: {
             status: uporder.status,
             purchaser: uporder.purchaser
+        }
+    })
+}
+
+export async function updateStatus(data: any) {
+    const us = await db.orders.update({
+        where: {
+            order_id: data.order_id
+        },
+        data: {
+            status: data.status
         }
     })
 }

@@ -8,7 +8,7 @@ import { deleteDraftById, deleteDraftProduct, getDrafts, getDraftsProducts } fro
 import { redirect, useRouter } from 'next/navigation';
 import { useSession } from 'next-auth/react';
 import dayjs from 'dayjs';
-import { ActionIcon, Box, Button, Card, Divider, Flex, Grid, Group, Modal, Stack, Text, Title } from '@mantine/core';
+import { ActionIcon, Anchor, Box, Button, Card, Divider, Flex, Grid, Group, Modal, Stack, Text, Title } from '@mantine/core';
 
 import classes from './drafts.module.css'
 import { IconEdit, IconEye, IconTrash } from '@tabler/icons-react';
@@ -88,7 +88,7 @@ export default function DraftPage() {
     <>
       <Flex justify='flex-start' align='center' gap="lg">
         <Title order={2} mb={20} className={classes.title}>Solicitações</Title>
-        <Title order={3}  mb={20} className={classes.title} >{session?.user?.name}</Title>
+        <Title order={3} mb={20} className={classes.title} >{session?.user?.name}</Title>
       </Flex>
 
       <DataTable
@@ -174,6 +174,22 @@ export default function DraftPage() {
                         <Grid.Col span={6}><Text size='xs'>{item.products.description}</Text></Grid.Col>
                         <Grid.Col span={2}><Text size='xs'>{item.quantity}</Text></Grid.Col>
                         <Grid.Col span={2}><Text size='xs'>{item.measures.measure}</Text></Grid.Col>
+                        {item.obs.length > 0 ? <Grid.Col span={12}>
+                          <Flex gap='md'>
+                            <Text size='xs' fw={700}>Observação: </Text>
+                            <Text size='xs'>{item.obs}</Text>
+                          </Flex>
+                        </Grid.Col> : <></>}
+                        {item.reference.length > 0 ? <Grid.Col span={12}>
+                          <Flex gap='md'>
+                            <Anchor
+                              variant="subtle"
+                              href={item.reference}
+                              target='_blank'
+                            >Link para Referência
+                            </Anchor>
+                          </Flex>
+                        </Grid.Col> : <></>}
                       </Grid>
                       <Divider my="sm" />
                     </>

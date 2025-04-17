@@ -10,13 +10,15 @@ import {
   Grid,
   InputBase,
   Input,
-  Text,
   ActionIcon,
-  NumberInput
+  NumberInput,
+  Stack
 } from '@mantine/core';
+import { IMaskInput } from 'react-imask';
+import { useMediaQuery } from '@mantine/hooks';
 import { notifications } from "@mantine/notifications";
 import { useEffect, useState } from "react"
-import revPath, { addDraftProduct, addProductoOnTable, editDraftProduct, getDraftId, getMeasures, getProducts, getSupplierByName, getSuppliers, updateOrderProductListByAdmin } from '@/lib/orders/getOrderData';
+import { addProductoOnTable, addSupplier, getMeasures, getProducts, getSupplierByName, getSuppliers, updateOrderProductListByAdmin } from '@/lib/orders/getOrderData';
 
 import classes from "./EditProductOrder.module.css"
 import { IconEdit, IconPlus } from '@tabler/icons-react';
@@ -24,7 +26,8 @@ import Loading from '@/app/loading';
 import { DatePickerInput } from '@mantine/dates';
 
 export default function EditProductOrder({ dataprod, upDataProduct }) {
-  const stack = useModalsStack(['editproduct']);
+  const stack = useModalsStack(['editproduct', 'addsupplier']);
+  const matches = useMediaQuery('(min-width: 36em)');
 
   const [showdata, setShowData] = useState(false)
 
@@ -36,6 +39,8 @@ export default function EditProductOrder({ dataprod, upDataProduct }) {
 
   const [optionsSupplier, setOptionsSupplier] = useState([])
   const [supplier, setSupplier] = useState("")
+  const [newsupplier, setNewSupplier] = useState('')
+  const [cnpj, setCNPJ] = useState('')
 
   const [purchaseNumber, setPurchaseNumber] = useState(dataprod.purchase_number)
   const [amount, setAmount] = useState(dataprod.amount)
@@ -139,7 +144,7 @@ export default function EditProductOrder({ dataprod, upDataProduct }) {
     }
     const res = await updateOrderProductListByAdmin(dataproduct)
     upDataProduct()
-    
+
   }
 
   const resetFields = () => {
@@ -151,11 +156,23 @@ export default function EditProductOrder({ dataprod, upDataProduct }) {
     setSelectedMeasure("")
   }
 
+  const saveSupplier = async () => {
+    const data = {
+      supplier: newsupplier,
+      cnpj: cnpj.replace(/\.|\/|-/g, "")
+    }
+    const ss = await addSupplier(data)
+    const supp = await getSuppliers().then((res) => {
+      setSupplier(newsupplier)
+      setOptionsSupplier(res)
+    })
+  }
+
   useEffect(() => {
     if (dataprod?.suppliers !== null) {
       setSupplier(dataprod?.suppliers.supplier)
     }
-    
+
     const getProductOptions = async () => {
       try {
         const products = await getProducts()
@@ -184,11 +201,6 @@ export default function EditProductOrder({ dataprod, upDataProduct }) {
     comboboxmeasure.selectFirstOption()
     setShowData(true)
   }, []);
-
-
-
-
-
 
   if (!showdata) return <Loading />
 
@@ -288,7 +300,7 @@ export default function EditProductOrder({ dataprod, upDataProduct }) {
                   setReference(event.currentTarget.value);
                 }} />
             </Grid.Col>
-            <Grid.Col span={12}>
+            <Grid.Col span={{ base: 12, xs: 9 }}>
               <Combobox
                 position="bottom-start"
                 withArrow
@@ -317,6 +329,24 @@ export default function EditProductOrder({ dataprod, upDataProduct }) {
                 </Combobox.Dropdown>
               </Combobox>
             </Grid.Col>
+            {matches &&
+              <Grid.Col span={3}>
+                <Stack align='flex-end' justify='center' mt={27}>
+                  <Button
+                    size='xs'
+                    onClick={() => stack.open('addsupplier')}
+
+                  > Adicionar Fornecedor</Button>
+                </Stack>
+              </Grid.Col>
+            }
+            {!matches &&
+              <Grid.Col span={12}>
+                <Stack align='flex-end' justify='center' >
+                  <Button size='xs' onClick={() => stack.open('addsupplier')}> Adicionar Fornecedor</Button>
+                </Stack>
+              </Grid.Col>
+            }
             <Grid.Col span={12}>
               <TextInput
                 label="Número do Pedido"
@@ -355,6 +385,15 @@ export default function EditProductOrder({ dataprod, upDataProduct }) {
           </Grid>
           <Group mt="xl" justify="flex-end">
             <Button onClick={async () => {
+              if(reference && reference.slice(0,4) !== 'http') {
+                notifications.show({
+                  title: "ERRO EM REFERÊNCIA",
+                  message: "Favor colocar um link válido para a Referência",
+                  position: 'top-center',
+                  color: 'red',
+                })
+                throw new Error
+              }
               await editProductInOrder()
               stack.close('editproduct')
             }}
@@ -363,6 +402,48 @@ export default function EditProductOrder({ dataprod, upDataProduct }) {
             </Button>
           </Group>
 
+        </Modal>
+      </Modal.Stack>
+      <Modal.Stack>
+        <Modal {...stack.register('addsupplier')} title="Adicionar Fornecedor" size="md" className={classes.title}>
+          <Grid>
+            <Grid.Col span={12}>
+              <InputBase
+                label="Fornecedor"
+                placeholder='Fornecedor'
+                value={newsupplier}
+                onChange={(event) => {
+                  setNewSupplier(event.currentTarget.value);
+                }} />
+            </Grid.Col>
+            <Grid.Col span={12}>
+              <InputBase
+                component={IMaskInput}
+                mask="00.000.000/0000-00"
+                label="CNPJ"
+                placeholder='CNPJ'
+                value={cnpj}
+                onChange={(event) => {
+                  setCNPJ(event.currentTarget.value);
+                }} />
+            </Grid.Col>
+            <Grid.Col span={12}>
+              <Button
+                onClick={() => {
+                  saveSupplier()
+                  notifications.show({
+                    title: "Adicionar Fornecedor",
+                    message: "Fornecedor adicionado com sucesso",
+                    position: 'top-center',
+                    color: 'teal',
+                  })
+                  setNewSupplier('')
+                  setCNPJ('')
+                  stack.close('addsupplier')
+                }}
+              >Salvar</Button>
+            </Grid.Col>
+          </Grid>
         </Modal>
       </Modal.Stack>
       <ActionIcon

@@ -14,6 +14,7 @@ import {
     Combobox,
     InputBase,
     Input,
+    Anchor,
 } from "@mantine/core"
 import { DatePickerInput } from "@mantine/dates";
 import 'dayjs/locale/pt-br';
@@ -28,11 +29,20 @@ import AddProduct from "@/components/AddProduct/page";
 
 import classes from './editdraft.module.css'
 import { useSession } from "next-auth/react";
-import { redirect, useSearchParams, useRouter, usePathname } from "next/navigation";
+import { redirect, useSearchParams, useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 
-import { updateDraft, getDraftsProducts, getDraftById, createOrder, getOrderNumber, getApproverByUserId, updateOrderProductsList, getOrderId, getProjectId, addProject, deleteDraftProduct, getUsers } from "@/lib/orders/getOrderData";
-import { IconEdit, IconTrash } from "@tabler/icons-react";
+import { 
+    updateDraft, 
+    getDraftsProducts, 
+    getDraftById, 
+    getApproverByUserId, 
+    getProjectId, 
+    addProject, 
+    deleteDraftProduct, 
+    getUsers 
+} from "@/lib/orders/getOrderData";
+import { IconTrash } from "@tabler/icons-react";
 import { notifications } from "@mantine/notifications";
 import Loading from "@/app/loading";
 import EditProduct from "@/components/EditProduct/page";
@@ -47,7 +57,6 @@ export default function EditDraftPage() {
     const searchParams = useSearchParams()
     const dId = searchParams.get('dId')
     const router = useRouter()
-    const path = usePathname()
 
     const [showData, setShowData] = useState(false)
     const [companyName, setCompanyName] = useState('')
@@ -58,7 +67,7 @@ export default function EditDraftPage() {
     const [costCenter, setCostCenter] = useState('')
     const [costCenterId, setCostCenterId] = useState(0)
     const [projectName, setProjectName] = useState('')
-    const [projectId, setProjectId] = useState(0)
+    //const [projectId, setProjectId] = useState(0)
     const [selectedApprover, setSelectedApprover] = useState('')
     const [approvers, setApprovers] = useState<string[] | null>(null);
 
@@ -90,11 +99,17 @@ export default function EditDraftPage() {
         setCostCenterId(res?.cost_centers ? res?.cost_centers.cost_center_id : 0)
         setCostCenter(res?.cost_centers ? res?.cost_centers?.cost_center : '')
         setProjectName(res?.projects?.project ? res?.projects.project : '')
-        setProjectId(res.projects?.project_id ? res.projects?.project_id : 0)
+        //setProjectId(res.projects?.project_id ? res.projects?.project_id : 0)
         setSelectedApprover(approver.name)
         const approvers = async () => {
             const result = await getUsers()
-            setApprovers(result)
+            let app = []
+            result.map((item) => {
+                if (item.approver === 1) {
+                    app.push(item)
+                }
+            })
+            setApprovers(app)
         }
         approvers()
         setShowData(true)
@@ -177,26 +192,30 @@ export default function EditDraftPage() {
                     if (!res) {
                         const addproj = await addProject(projectName)
                         const gproj = await getProjectId(projectName)
+                        const appId = await checkApprover()
                         const values = {
                             company_id: companyId,
                             delivery_address: deliveryAddress,
                             cost_center_id: 0,
                             delivery_at: deliveryDate,
-                            project_id: gproj
+                            project_id: gproj,
+                            approver_id: appId
                         }
                         const updateValues = await updateDraft(values, draftNumber)
-                        setProjectId(gproj)
+                        //setProjectId(gproj)
                         setCostCenterId(0)
                     } else {
+                        const appId = await checkApprover()
                         const values = {
                             company_id: companyId,
                             delivery_address: deliveryAddress,
                             cost_center_id: 0,
                             delivery_at: deliveryDate,
-                            project_id: res
+                            project_id: res,
+                            approver_id: appId
                         }
                         const updateValues = await updateDraft(values, draftNumber)
-                        setProjectId(res)
+                        //setProjectId(res)
                         setCostCenterId(0)
                     }
                 })
@@ -266,7 +285,6 @@ export default function EditDraftPage() {
         </Combobox.Option>
     ))
 
-
     if (!showData) return <Loading />
 
     return (
@@ -284,7 +302,6 @@ export default function EditDraftPage() {
                     </Group>
                 </Card.Section>
                 <Group justify="space-between">
-
                     <Text fw={900} size="lg" mt="md" mb={10} variant="gradient" gradient={{ from: 'indigo', to: 'cyan', deg: 90 }}>
                         Dados da Solicitação - Nº {draftNumber}
                     </Text>
@@ -395,7 +412,6 @@ export default function EditDraftPage() {
                                 </Combobox>
                             </Grid.Col>
                         </>
-
                     }
                 </Grid>
                 <Divider mt={30} />
@@ -427,16 +443,6 @@ export default function EditDraftPage() {
                                     width: "10%"
                                 },
                                 {
-                                    accessor: 'obs',
-                                    title: "Observações",
-                                    width: "20%"
-                                },
-                                {
-                                    accessor: 'reference',
-                                    title: "Referência",
-                                    width: "20%"
-                                },
-                                {
                                     accessor: 'actions',
                                     title: <Box mr={6}>Ações</Box>,
                                     textAlign: 'right',
@@ -460,7 +466,28 @@ export default function EditDraftPage() {
                                     )
                                 }
                             ]}
-
+                            rowExpansion={{
+                                content: ({ record }) => (
+                                    <Stack className={classes.details} p="xs" gap={6}>
+                                        {record.obs.length > 0 ?
+                                            <Group gap={6}>
+                                                <div className={classes.label}>Observações:</div>
+                                                <div>
+                                                    {record.obs}
+                                                </div>
+                                            </Group> : <></>}
+                                        {record.reference.length > 0 ?
+                                            <Group gap={6}>
+                                                <Anchor
+                                                    variant="subtle"
+                                                    href={record.reference}
+                                                    target='_blank'
+                                                >Link para Referência
+                                                </Anchor>
+                                            </Group> : <></>}
+                                    </Stack>
+                                )
+                            }}
                             records={dataTable}
                             striped
                             highlightOnHover
@@ -471,7 +498,7 @@ export default function EditDraftPage() {
                 </Grid>
                 <Grid type="container" mt={50}>
                     <Grid.Col span={{ base: 12, xs: 12 }}>
-                        <Button variant="filled" color="teal.7"
+                        <Button variant="filled" color="teal.7" size="xs"
                             onClick={async () => {
                                 const sd = await saveDraft()
                                     .then(() => {
@@ -485,7 +512,7 @@ export default function EditDraftPage() {
                             }
                             }
                         >Salvar Solicitação</Button>
-                        <Button ml={20} variant="filled" color="indigo"
+                        <Button ml={20} variant="filled" color="indigo" size="xs"
                             onClick={async () => {
                                 const so = await saveOrder()
                                     .then(() => {

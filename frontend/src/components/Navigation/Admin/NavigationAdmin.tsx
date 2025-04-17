@@ -51,7 +51,7 @@ const NavigationAdmin = ({
 }: NavigationProps) => {
   const tablet_match = useMediaQuery('(max-width: 768px)');
 
-  const session = useSession()
+  const { data: session } = useSession()
 
 
   const links = mockdata.map((m) => (

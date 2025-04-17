@@ -67,3 +67,7 @@
 .boxcontent {
   color: var(--mantine-color-blue-7);
 }
+
+.actions {
+  background-color: white;
+}

@@ -63,7 +63,7 @@ function HeaderNav(props: HeaderNavProps) {
           />
         )} */}
         <Flex>
-          <Title order={4} ml='md' c='blue.9'>Sistemas de Compras Quanta</Title>
+          <Title order={4} ml='md' c='blue.9'>Sistemas de Compras</Title>
         </Flex>
       </Group>
       <Group>

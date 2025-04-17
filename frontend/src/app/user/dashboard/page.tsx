@@ -20,7 +20,7 @@ import { useRouter } from 'next/navigation';
 
 import classes from './dashboard.module.css';
 import { useEffect, useState } from 'react';
-import { getOrders } from '@/lib/orders/getOrderData';
+import { getDrafts, getOrders } from '@/lib/orders/getOrderData';
 import { IconBasketCog, IconShoppingBagCheck, IconShoppingBagExclamation } from '@tabler/icons-react';
 
 
@@ -38,10 +38,30 @@ function Page() {
   const [drafts, setDrafts] = useState()
 
   useEffect(() => {
-      const getOrderApp = async () => {
-        const goa = await getOrders(session?.user?.id)
-      }
-  }, [])
+      getDraftsData()
+      getOrderData()
+  }, [ordersApprove, ordersRequest, drafts])
+
+
+  const getOrderData = async () => {
+    const goa = await getOrders(session?.user?.id)
+    .then((res) => {
+      let totalapp = 0
+      let totalreq = res.length
+      res.map((item) => {
+       if (item.status === "Em Aprovação") totalapp++
+      })
+      setOrdersApprove(totalapp)
+      setOrdersRequest(totalreq)
+    })
+  }
+
+  const getDraftsData = async () => {
+    const gdd = await getDrafts(session?.user?.id)
+    .then((res) => {
+      setDrafts(res?.length)
+    })
+  }
 
 
   return (
@@ -59,7 +79,7 @@ function Page() {
               padding="xl"
               withBorder
               radius='md'
-              className={classes.card}>
+              className={classes.card1}>
               <Stack
                 h='30vh'
                 align='stretch'
@@ -69,8 +89,8 @@ function Page() {
                   <IconShoppingBagExclamation size={100} ></IconShoppingBagExclamation>
                   </Flex>
                 
-                <Title order={4}>REQUISIÇÕES PARA APROVAR</Title>
-                <Text>10 Requisições</Text>
+                <Title order={4}>REQUISIÇÕES AGUARDANDO APROVAÇÃO</Title>
+                <Text>{ordersApprove} Requisições</Text>
               </Stack>
             </Card>
           </Grid.Col>
@@ -78,7 +98,7 @@ function Page() {
             <Card
               shadow="sm"
               padding="xl"
-              className={classes.card}>
+              className={classes.card2}>
               <Stack
                 h='30vh'
                 align='stretch'
@@ -87,8 +107,8 @@ function Page() {
                   <Flex justify='center'>
                   <IconShoppingBagCheck size={100} ></IconShoppingBagCheck>
                   </Flex>
-                <Title order={3}>REQUISIÇÕES EFETUADAS</Title>
-                <Text>100 Requisições</Text>
+                <Title order={4}>REQUISIÇÕES EFETUADAS</Title>
+                <Text>{ordersRequest} Requisições</Text>
               </Stack>
             </Card>
           </Grid.Col>
@@ -96,7 +116,7 @@ function Page() {
             <Card
               shadow="lg"
               padding="xl"
-              className={classes.card}>
+              className={classes.card3}>
               <Stack
                 h='30vh'
                 align='stretch'
@@ -105,8 +125,8 @@ function Page() {
                   <Flex justify='center'>
                   <IconBasketCog size={100} ></IconBasketCog>
                   </Flex>
-                <Title order={3}>SOLICITAÇÕES</Title>
-                <Text>50 Solicitações</Text>
+                <Title order={4}>SOLICITAÇÕES</Title>
+                <Text>{drafts} Solicitações</Text>
               </Stack>
             </Card>
           </Grid.Col>

@@ -137,7 +137,7 @@ model order_products_list {
   obs                   String?    @db.Text
   supplier_id           Int?
   purchase_number       String?
-  amount                Float?     @db.Double()
+  amount                Decimal?   @db.Decimal(10, 2)
   delivery_expected     DateTime?
   orders                orders     @relation(fields: [order_id], references: [order_id], onDelete: NoAction, onUpdate: NoAction, map: "dpl_order_id")
   measures              measures?  @relation(fields: [measure_id], references: [measure_id], onDelete: NoAction, onUpdate: NoAction, map: "opl_measure_id")

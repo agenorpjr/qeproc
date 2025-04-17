@@ -86,7 +86,6 @@ export default function AddProduct({ draftNumber, upDataDP }) {
   }
 
   const addProductDraftList = async () => {
-
     const draft_id = await getDraftId(draftNumber)
     const dataproduct = {
       draft_id: draft_id,
@@ -229,7 +228,7 @@ export default function AddProduct({ draftNumber, upDataDP }) {
             <Grid.Col span={12}>
               <TextInput
                 label="Referência"
-                placeholder='Referência'
+                placeholder='Link para Referência'
                 value={reference}
                 onChange={(event) => {
                   setReference(event.currentTarget.value);
@@ -245,6 +244,15 @@ export default function AddProduct({ draftNumber, upDataDP }) {
                 notifications.show({
                   title: "Adicionar Produto",
                   message: "Preencha todos os campos obrigatórios para continuar",
+                  position: 'top-center',
+                  color: 'red',
+                })
+                throw new Error
+              }
+              if(reference && reference.slice(0,4) !== 'http') {
+                notifications.show({
+                  title: "ERRO EM REFERÊNCIA",
+                  message: "Favor colocar um link válido para a Referência",
                   position: 'top-center',
                   color: 'red',
                 })

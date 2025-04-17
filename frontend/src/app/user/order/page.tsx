@@ -14,7 +14,9 @@ import {
     useCombobox,
     Combobox,
     InputBase,
-    Input
+    Input,
+    NavLink,
+    Anchor
 } from "@mantine/core"
 import { DatePickerInput } from "@mantine/dates";
 import 'dayjs/locale/pt-br';
@@ -89,8 +91,14 @@ export default function NewOrder() {
 
     useEffect(() => {
         const approvers = async () => {
-            const res = await getUsers()
-            setApprovers(res)
+            const result = await getUsers()
+            let app = []
+            result.map((item) => {
+                if (item.approver === 1) {
+                    app.push(item)
+                }
+            })
+            setApprovers(app)
         }
         approvers()
         resetFields()
@@ -185,24 +193,27 @@ export default function NewOrder() {
                     if (!res) {
                         const addproj = await addProject(projectName)
                         const gproj = await getProjectId(projectName)
+                        const appId = await checkApprover()
                         const values = {
                             company_id: companyId,
                             delivery_address: deliveryAddress,
                             cost_center_id: 0,
                             delivery_at: deliveryDate,
-                            project_id: gproj
+                            project_id: gproj,
+                            approver_id: appId
                         }
                         const updateValues = await updateDraft(values, draftNumber)
                         setProjectId(gproj)
                         setCostCenterId(0)
                     } else {
+                        const appId = await checkApprover()
                         const values = {
                             company_id: companyId,
                             delivery_address: deliveryAddress,
                             cost_center_id: 0,
                             delivery_at: deliveryDate,
                             project_id: res,
-                            approver_id: 9
+                            approver_id: appId
                         }
                         const updateValues = await updateDraft(values, draftNumber)
                         setProjectId(res)
@@ -433,13 +444,14 @@ export default function NewOrder() {
                                 <AddProduct draftNumber={draftNumber} upDataDP={UpdataDP} />
                             </Flex>
                         </Grid.Col>
-                        <Grid.Col span={12}>
+                        <Grid.Col span={12} maw='90vw'>
                             <DataTable
                                 columns={[
                                     {
                                         accessor: 'products.description',
                                         title: 'Produtos',
-                                        width: "30%"
+                                        width: "30%",
+                                        noWrap: true,
                                     },
                                     {
                                         accessor: 'measures.measure',
@@ -451,16 +463,25 @@ export default function NewOrder() {
                                         title: 'Quantidade',
                                         width: "10%"
                                     },
-                                    {
-                                        accessor: 'obs',
-                                        title: "Observações",
-                                        width: "20%"
-                                    },
-                                    {
-                                        accessor: 'reference',
-                                        title: "Referência",
-                                        width: "20%"
-                                    },
+                                    // {
+                                    //     accessor: 'obs',
+                                    //     title: "Observações",
+                                    //     width: "20%",
+
+                                    // },
+                                    // {
+                                    //     accessor: 'reference',
+                                    //     title: "Referência",
+                                    //     width: "20%",
+                                    //     render: (record) => (
+                                    //         <Anchor
+                                    //             variant="subtle"
+                                    //             href={record.reference}
+                                    //             target='_blank'
+                                    //         >Link para Referência
+                                    //         </Anchor>
+                                    //     )
+                                    // },
                                     {
                                         accessor: 'actions',
                                         title: <Box mr={6}>Ações</Box>,
@@ -485,10 +506,33 @@ export default function NewOrder() {
                                         )
                                     }
                                 ]}
+                                rowExpansion={{
+                                    content: ({ record }) => (
+                                        <Stack className={classes.details} p="xs" gap={6}>
+                                            {record.obs.length > 0 ?
+                                                <Group gap={6}>
+                                                    <div className={classes.label}>Observações:</div>
+                                                    <div>
+                                                        {record.obs}
+                                                    </div>
+                                                </Group> : <></>}
+                                            {record.reference.length > 0 ?
+                                                <Group gap={6}>
+                                                    <Anchor
+                                                        variant="subtle"
+                                                        href={record.reference}
+                                                        target='_blank'
+                                                    >Link para Referência
+                                                    </Anchor>
+                                                </Group> : <></>}
+                                        </Stack>
+                                    )
+                                }}
                                 records={dataTable}
                                 striped
                                 highlightOnHover
                                 withTableBorder
+                                pinLastColumn
                                 idAccessor="products.product_id"
                             />
                         </Grid.Col>
