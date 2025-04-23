@@ -32,8 +32,6 @@ const mockdata = [
       { label: 'Gerenciar Compradores', icon: IconBriefcase, link: "/admin/purchaser" },
       { label: 'Gerenciar Aprovadores', icon: IconThumbUp, link: "/admin/approver" },
       { label: 'Trocar Senha', icon: IconKeyFilled, link: '/admin/settings' },
-      { label: 'Tasks', icon: IconListDetails, link: '/user' },
-      { label: 'Calendar', icon: IconCalendar, link: '/user' },
     ],
   }
 ];

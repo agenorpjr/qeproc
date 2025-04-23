@@ -463,25 +463,6 @@ export default function NewOrder() {
                                         title: 'Quantidade',
                                         width: "10%"
                                     },
-                                    // {
-                                    //     accessor: 'obs',
-                                    //     title: "Observações",
-                                    //     width: "20%",
-
-                                    // },
-                                    // {
-                                    //     accessor: 'reference',
-                                    //     title: "Referência",
-                                    //     width: "20%",
-                                    //     render: (record) => (
-                                    //         <Anchor
-                                    //             variant="subtle"
-                                    //             href={record.reference}
-                                    //             target='_blank'
-                                    //         >Link para Referência
-                                    //         </Anchor>
-                                    //     )
-                                    // },
                                     {
                                         accessor: 'actions',
                                         title: <Box mr={6}>Ações</Box>,
@@ -510,21 +491,23 @@ export default function NewOrder() {
                                     content: ({ record }) => (
                                         <Stack className={classes.details} p="xs" gap={6}>
                                             {record.obs.length > 0 ?
-                                                <Group gap={6}>
-                                                    <div className={classes.label}>Observações:</div>
-                                                    <div>
-                                                        {record.obs}
-                                                    </div>
-                                                </Group> : <></>}
+                                                <Flex gap='md' align='center' ml={20}>
+                                                    <Text size='xs' fw={700}>Observação: </Text>
+                                                    <Text size='xs'>{record.obs}</Text>
+                                                </Flex> : <></>}
                                             {record.reference.length > 0 ?
-                                                <Group gap={6}>
+                                                <Flex gap='md' align='center' ml={20}>
+                                                    <Text size='xs' fw={700}>Referência: </Text>
                                                     <Anchor
+                                                        fz='xs'
+                                                        c='black'
+                                                        underline="always"
                                                         variant="subtle"
                                                         href={record.reference}
                                                         target='_blank'
                                                     >Link para Referência
                                                     </Anchor>
-                                                </Group> : <></>}
+                                                </Flex> : <></>}
                                         </Stack>
                                     )
                                 }}

@@ -171,19 +171,22 @@ export default function DraftPage() {
                   return (
                     <>
                       <Grid>
-                        <Grid.Col span={6}><Text size='xs'>{item.products.description}</Text></Grid.Col>
-                        <Grid.Col span={2}><Text size='xs'>{item.quantity}</Text></Grid.Col>
-                        <Grid.Col span={2}><Text size='xs'>{item.measures.measure}</Text></Grid.Col>
+                        <Grid.Col span={6}><Text size='sm' fw={500}>{item.products.description}</Text></Grid.Col>
+                        <Grid.Col span={2}><Text size='sm' fw={500}>{item.quantity}</Text></Grid.Col>
+                        <Grid.Col span={2}><Text size='sm' fw={500}>{item.measures.measure}</Text></Grid.Col>
                         {item.obs.length > 0 ? <Grid.Col span={12}>
-                          <Flex gap='md'>
+                          <Flex gap='md' align='center' ml={20}>
                             <Text size='xs' fw={700}>Observação: </Text>
                             <Text size='xs'>{item.obs}</Text>
                           </Flex>
                         </Grid.Col> : <></>}
                         {item.reference.length > 0 ? <Grid.Col span={12}>
-                          <Flex gap='md'>
+                          <Flex gap='md' align='center' ml={20}>
+                            <Text size='xs' fw={700}>Referência: </Text>
                             <Anchor
-                              variant="subtle"
+                              fz='xs'
+                              c='black'
+                              underline="always"
                               href={item.reference}
                               target='_blank'
                             >Link para Referência

@@ -20,8 +20,8 @@ import { useRouter } from 'next/navigation';
 
 import classes from './dashboard.module.css';
 import { useEffect, useState } from 'react';
-import { getDrafts, getOrders } from '@/lib/orders/getOrderData';
-import { IconBasketCog, IconShoppingBagCheck, IconShoppingBagExclamation } from '@tabler/icons-react';
+import { getDrafts, getOrders, getOrdersByApprover } from '@/lib/orders/getOrderData';
+import { IconBasketCog, IconBasketStar, IconShoppingBagCheck, IconShoppingBagExclamation } from '@tabler/icons-react';
 
 
 function Page() {
@@ -36,11 +36,17 @@ function Page() {
   const [ordersApprove, setOrdersApprove] = useState()
   const [ordersRequest, setOrdersRequest] = useState()
   const [drafts, setDrafts] = useState()
+  const [ordersToApprove, setOrdersToApprove] = useState()
+  const [approverYes, setApproverYes] = useState(false)
 
   useEffect(() => {
       getDraftsData()
       getOrderData()
-  }, [ordersApprove, ordersRequest, drafts])
+      if (session?.user?.role === "approver") {
+        setApproverYes(true)
+        getOrdersToApproveData()
+      }
+  }, [ordersApprove, ordersRequest, drafts, ordersToApprove])
 
 
   const getOrderData = async () => {
@@ -63,6 +69,17 @@ function Page() {
     })
   }
 
+  const getOrdersToApproveData = async () => {
+    const ota = await getOrdersByApprover(session?.user?.id)
+    let totalota = 0
+    ota.map((item) => {
+      if (item.status === "Em Aprovação") {
+        totalota++
+      }
+    })
+    setOrdersToApprove(totalota)
+  }
+
 
   return (
     <>
@@ -73,7 +90,7 @@ function Page() {
 
         <PageHeader title="Dashboard" withActions={true} />
         <Grid mt={20}>
-          <Grid.Col span={{ base: 12, xs: 4 }}>
+          <Grid.Col span={{ base: 12, xs: 3 }}>
             <Card
               shadow="md"
               padding="xl"
@@ -94,7 +111,7 @@ function Page() {
               </Stack>
             </Card>
           </Grid.Col>
-          <Grid.Col span={{ base: 12, xs: 4 }}>
+          <Grid.Col span={{ base: 12, xs: 3 }}>
             <Card
               shadow="sm"
               padding="xl"
@@ -112,7 +129,7 @@ function Page() {
               </Stack>
             </Card>
           </Grid.Col>
-          <Grid.Col span={{ base: 12, xs: 4 }}>
+          <Grid.Col span={{ base: 12, xs: 3 }}>
             <Card
               shadow="lg"
               padding="xl"
@@ -130,9 +147,28 @@ function Page() {
               </Stack>
             </Card>
           </Grid.Col>
+          {approverYes ?
+        <Grid.Col span={{ base: 12, xs: 3 }}>
+            <Card
+              shadow="lg"
+              padding="xl"
+              className={classes.card4}>
+              <Stack
+                h='30vh'
+                align='stretch'
+                justify="center"
+                gap="md">
+                <Flex justify='center'>
+                  <IconBasketStar size={100} ></IconBasketStar>
+                </Flex>
+                <Title order={4}>REQUISIÇÕES PARA APROVAR</Title>
+                <Text>{ordersToApprove} {ordersToApprove === 1 ? "Requisição" : "Requisições"}</Text>
+              </Stack>
+            </Card>
+          </Grid.Col> : <></>
+        }
         </Grid>
-
-
+        
 
 
 

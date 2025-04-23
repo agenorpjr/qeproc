@@ -232,7 +232,8 @@ export default function EditOrdertPage() {
                                 'Pedido Confirmado',
                                 'Pedido Entregue',
                                 'Cancelada',
-                                'Em Aprovação'
+                                'Em Aprovação',
+                                'Requisição Aprovada'
                             ]}
                         />
                     </Grid.Col>

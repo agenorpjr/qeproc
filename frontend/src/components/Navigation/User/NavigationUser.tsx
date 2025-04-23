@@ -29,8 +29,6 @@ const mockdata = [
       { label: 'Minhas Solicitações', icon: IconBasketCog, link: "/user/drafts" },
       { label: 'Nova Solicitação', icon: IconClipboardPlus, link: "/user/order" },
       { label: 'Trocar Senha', icon: IconKeyFilled, link: '/user/settings' },
-      { label: 'Tasks', icon: IconListDetails, link: '/user' },
-      { label: 'Calendar', icon: IconCalendar, link: '/user' },
     ],
   }
 ];
@@ -44,8 +42,6 @@ const mockapproverdata = [
       { label: 'Minhas Solicitações', icon: IconBasketCog, link: "/user/drafts" },
       { label: 'Nova Solicitação', icon: IconClipboardPlus, link: "/user/order" },
       { label: 'Trocar Senha', icon: IconKeyFilled, link: '/user/settings' },
-      { label: 'Tasks', icon: IconListDetails, link: '/user' },
-      { label: 'Calendar', icon: IconCalendar, link: '/user' },
     ],
   }
 ];

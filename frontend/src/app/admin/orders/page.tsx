@@ -278,13 +278,13 @@ export default function OrdersPage() {
                   return (
                     <>
                       <Grid maw="90vw">
-                        <Grid.Col span={3}><Text size='sm' fw={700}>{item.products.description}</Text></Grid.Col>
-                        <Grid.Col span={1}><Text size='sm' fw={700}>{item.quantity}</Text></Grid.Col>
-                        <Grid.Col span={1}><Text size='sm' fw={700}>{item.measures.measure}</Text></Grid.Col>
-                        <Grid.Col span={2}><Text size='sm' fw={700}>{item?.suppliers?.supplier ? item.suppliers.supplier : ''}</Text></Grid.Col>
-                        <Grid.Col span={1}><Text size='sm' fw={700}>{item?.purchase_number ? item.purchase_number : ''}</Text></Grid.Col>
-                        <Grid.Col span={1}><Text size='sm' fw={700}>{item?.amount ? `R$ ${item.amount.toString().replace('.', ',')}` : ''}</Text></Grid.Col>
-                        <Grid.Col span={2}><Text size='sm' fw={700}>{item.delivery_expected ? dayjs(item.delivery_expected).format("DD/MM/YYYY") : ''}</Text></Grid.Col>
+                        <Grid.Col span={3}><Text size='sm' fw={500}>{item.products.description}</Text></Grid.Col>
+                        <Grid.Col span={1}><Text size='sm' fw={500}>{item.quantity}</Text></Grid.Col>
+                        <Grid.Col span={1}><Text size='sm' fw={500}>{item.measures.measure}</Text></Grid.Col>
+                        <Grid.Col span={2}><Text size='sm' fw={500}>{item?.suppliers?.supplier ? item.suppliers.supplier : ''}</Text></Grid.Col>
+                        <Grid.Col span={1}><Text size='sm' fw={500}>{item?.purchase_number ? item.purchase_number : ''}</Text></Grid.Col>
+                        <Grid.Col span={1}><Text size='sm' fw={500}>{item?.amount ? `R$ ${item.amount.toString().replace('.', ',')}` : ''}</Text></Grid.Col>
+                        <Grid.Col span={2}><Text size='sm' fw={500}>{item.delivery_expected ? dayjs(item.delivery_expected).format("DD/MM/YYYY") : ''}</Text></Grid.Col>
                         {item.obs.length > 0 ? <Grid.Col span={12}>
                           <Flex gap='md' align='center' ml={20}>
                             <Text size='xs' fw={700}>Observação: </Text>
@@ -295,7 +295,7 @@ export default function OrdersPage() {
                           <Flex gap='md' align='center' ml={20}>
                             <Text size='xs' fw={700}>Referência: </Text>
                             <Anchor
-                              fz='sm'
+                              fz='xs'
                               c='black'
                               underline="always"
                               href={item.reference}

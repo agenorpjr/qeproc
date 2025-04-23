@@ -13,3 +13,9 @@
   color: white;
   min-height: 30vh;
 }
+
+.card4 {
+  background-color: var(--mantine-color-indigo-5);
+  color: white;
+  min-height: 30vh;
+}

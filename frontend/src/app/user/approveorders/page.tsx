@@ -7,7 +7,7 @@ import { getOrdersByApprover, updateOrder } from '@/lib/orders/getOrderData';
 import { redirect, useRouter } from 'next/navigation';
 import { useSession } from 'next-auth/react';
 import dayjs from 'dayjs';
-import { ActionIcon, Box, Button, Card, Pill, Divider, Flex, Grid, Group, Modal, Stack, Title, Text, Tooltip, TextInput, NumberInput, Center } from '@mantine/core';
+import { ActionIcon, Box, Button, Card, Pill, Divider, Flex, Grid, Group, Modal, Stack, Title, Text, Tooltip, TextInput, NumberInput, Center, Anchor } from '@mantine/core';
 
 import classes from './approveorders.module.css'
 import { IconAdjustments, IconEdit, IconSearch, IconX } from '@tabler/icons-react';
@@ -300,23 +300,30 @@ export default function OrdersApproverPage() {
                   return (
                     <>
                       <Grid maw="90vw">
-                        <Grid.Col span={3}><Text size='xs'>{item.products.description}</Text></Grid.Col>
-                        <Grid.Col span={1}><Text size='xs'>{item.quantity}</Text></Grid.Col>
-                        <Grid.Col span={1}><Text size='xs'>{item.measures.measure}</Text></Grid.Col>
-                        <Grid.Col span={2}><Text size='xs'>{item?.suppliers?.supplier ? item.suppliers.supplier : ''}</Text></Grid.Col>
-                        <Grid.Col span={1}><Text size='xs'>{item?.purchase_number ? item.purchase_number : ''}</Text></Grid.Col>
-                        <Grid.Col span={1}><Text size='xs'>{item?.amount ? `R$ ${item.amount.toString().replace('.', ',')}` : ''}</Text></Grid.Col>
-                        <Grid.Col span={2}><Text size='xs'>{item.delivery_expected ? dayjs(item.delivery_expected).format("DD/MM/YYYY") : ''}</Text></Grid.Col>
+                        <Grid.Col span={3}><Text size='sm' fw={500}>{item.products.description}</Text></Grid.Col>
+                        <Grid.Col span={1}><Text size='sm' fw={500}>{item.quantity}</Text></Grid.Col>
+                        <Grid.Col span={1}><Text size='sm' fw={500}>{item.measures.measure}</Text></Grid.Col>
+                        <Grid.Col span={2}><Text size='sm' fw={500}>{item?.suppliers?.supplier ? item.suppliers.supplier : ''}</Text></Grid.Col>
+                        <Grid.Col span={1}><Text size='sm' fw={500}>{item?.purchase_number ? item.purchase_number : ''}</Text></Grid.Col>
+                        <Grid.Col span={1}><Text size='sm' fw={500}>{item?.amount ? `R$ ${item.amount.toString().replace('.', ',')}` : ''}</Text></Grid.Col>
+                        <Grid.Col span={2}><Text size='sm' fw={500}>{item.delivery_expected ? dayjs(item.delivery_expected).format("DD/MM/YYYY") : ''}</Text></Grid.Col>
                         {item.obs.length > 0 ? <Grid.Col span={12}>
-                          <Flex gap='md'>
+                          <Flex gap='md' align='center' ml={20}>
                             <Text size='xs' fw={700}>Observação: </Text>
                             <Text size='xs'>{item.obs}</Text>
                           </Flex>
                         </Grid.Col> : <></>}
                         {item.reference.length > 0 ? <Grid.Col span={12}>
-                          <Flex gap='md'>
+                          <Flex gap='md' align='center' ml={20}>
                             <Text size='xs' fw={700}>Referência: </Text>
-                            <Text size='xs'>{item.reference}</Text>
+                            <Anchor
+                              fz='xs'
+                              c='black'
+                              underline="always"
+                              href={item.reference}
+                              target='_blank'
+                            >Link para Referência
+                            </Anchor>
                           </Flex>
                         </Grid.Col> : <></>}
 
