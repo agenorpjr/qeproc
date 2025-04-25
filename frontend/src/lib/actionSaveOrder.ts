@@ -17,6 +17,7 @@ export default async function actionSaveOrder(sodata: any) {
         approver_id: draftvalues?.approver_id,
         delivery_at: draftvalues?.delivery_at,
         purchaser: null,
+        requester: sodata.requester
     }
 
     const co = await createOrder(codata)

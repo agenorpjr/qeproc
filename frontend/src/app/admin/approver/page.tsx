@@ -1,5 +1,5 @@
 'use client'
-import { IconAdjustments, IconArrowLeft, IconEraser } from '@tabler/icons-react';
+import { IconEraser } from '@tabler/icons-react';
 import {
     ActionIcon,
     Button,

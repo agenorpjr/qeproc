@@ -20,7 +20,7 @@ import {
 
 import 'dayjs/locale/pt-br';
 
-import { DataTable, type DataTableSortStatus } from 'mantine-datatable';
+import { DataTable } from 'mantine-datatable';
 
 import classes from './editorder.module.css'
 import { useSession } from "next-auth/react";

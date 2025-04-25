@@ -34,8 +34,8 @@ export type Draft = {
 export default function DraftPage() {
   const { data: session, status } = useSession()
 
-  if (session?.user?.role === "admin") {
-    redirect("/admin")
+  if (session?.user?.role === "user") {
+    redirect("/user/dashboard")
   }
 
   const router = useRouter()
@@ -131,7 +131,7 @@ export default function DraftPage() {
                   color="blue"
                   onClick={(e: React.MouseEvent) => {
                     e.stopPropagation();
-                    router.push(`/user/editdraft?dId=${record.draft_id}`)
+                    router.push(`/admin/editdraft?dId=${record.draft_id}`)
                   }}
                 >
                   <IconEdit size={16} />

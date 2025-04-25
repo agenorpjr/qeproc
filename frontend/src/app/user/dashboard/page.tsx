@@ -1,14 +1,10 @@
 'use client';
 
 import {
-  Button,
   Card,
   Container,
   Flex,
   Grid,
-  Group,
-  Paper,
-  PaperProps,
   Stack,
   Text,
   Title,
@@ -168,14 +164,6 @@ function Page() {
           </Grid.Col> : <></>
         }
         </Grid>
-        
-
-
-
-
-
-
-
       </Container>
     </>
   );

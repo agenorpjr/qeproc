@@ -15,6 +15,7 @@ import {
     InputBase,
     Input,
     Anchor,
+    TextInput,
 } from "@mantine/core"
 import { DatePickerInput } from "@mantine/dates";
 import 'dayjs/locale/pt-br';
@@ -32,15 +33,15 @@ import { useSession } from "next-auth/react";
 import { redirect, useSearchParams, useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 
-import { 
-    updateDraft, 
-    getDraftsProducts, 
-    getDraftById, 
-    getApproverByUserId, 
-    getProjectId, 
-    addProject, 
-    deleteDraftProduct, 
-    getUsers 
+import {
+    updateDraft,
+    getDraftsProducts,
+    getDraftById,
+    getApproverByUserId,
+    getProjectId,
+    addProject,
+    deleteDraftProduct,
+    getUsers
 } from "@/lib/orders/getOrderData";
 import { IconTrash } from "@tabler/icons-react";
 import { notifications } from "@mantine/notifications";
@@ -51,8 +52,8 @@ import actionSaveOrder from "@/lib/actionSaveOrder";
 export default function EditDraftPage() {
 
     const { data: session } = useSession()
-    if (session?.user?.role === "admin") {
-        redirect("/admin")
+    if (session?.user?.role === "user") {
+        redirect("/user/dashboard")
     }
     const searchParams = useSearchParams()
     const dId = searchParams.get('dId')
@@ -69,6 +70,7 @@ export default function EditDraftPage() {
     const [projectName, setProjectName] = useState('')
     const [selectedApprover, setSelectedApprover] = useState('')
     const [approvers, setApprovers] = useState<string[] | null>(null);
+    const [requester, setRequester] = useState('')
 
     const [draftNumber, setDraftNumber] = useState("")
     const [draftId, setDraftId] = useState(0)
@@ -98,6 +100,7 @@ export default function EditDraftPage() {
         setCostCenterId(res?.cost_centers ? res?.cost_centers.cost_center_id : 0)
         setCostCenter(res?.cost_centers ? res?.cost_centers?.cost_center : '')
         setProjectName(res?.projects?.project ? res?.projects.project : '')
+        setRequester(res?.requester)
         //setProjectId(res.projects?.project_id ? res.projects?.project_id : 0)
         setSelectedApprover(approver.name)
         const approvers = async () => {
@@ -198,7 +201,8 @@ export default function EditDraftPage() {
                             cost_center_id: 0,
                             delivery_at: deliveryDate,
                             project_id: gproj,
-                            approver_id: appId
+                            approver_id: appId,
+                            requester: requester
                         }
                         const updateValues = await updateDraft(values, draftNumber)
                         setCostCenterId(0)
@@ -210,7 +214,8 @@ export default function EditDraftPage() {
                             cost_center_id: 0,
                             delivery_at: deliveryDate,
                             project_id: res,
-                            approver_id: appId
+                            approver_id: appId,
+                            requester: requester
                         }
                         const updateValues = await updateDraft(values, draftNumber)
                         setCostCenterId(0)
@@ -224,7 +229,8 @@ export default function EditDraftPage() {
                 cost_center_id: costCenterId,
                 delivery_at: deliveryDate,
                 project_id: 0,
-                approver_id: appId
+                approver_id: appId,
+                requester: requester
             }
             const updateValues = await updateDraft(values, draftNumber)
         }
@@ -318,7 +324,7 @@ export default function EditDraftPage() {
                         <Grid.Col span={{ base: 12, xs: 6 }}>
                             <ComboDelivery ComboDeliveryData={ComboDeliveryData} deliveryAddress={deliveryAddress} />
                         </Grid.Col>
-                        <Grid.Col span={{ base: 12, xs: 3 }}>
+                        <Grid.Col span={{ base: 12, xs: 2 }}>
                             <DatePickerInput
                                 required
                                 label="Data de Entrega"
@@ -330,7 +336,7 @@ export default function EditDraftPage() {
                                 valueFormat="DD/MM/YYYY"
                             />
                         </Grid.Col>
-                        <Grid.Col span={{ base: 12, xs: 3 }}>
+                        <Grid.Col span={{ base: 12, xs: 2 }}>
                             <Combobox
                                 store={approverComboBox}
                                 withinPortal={false}
@@ -359,6 +365,14 @@ export default function EditDraftPage() {
                                 </Combobox.Dropdown>
                             </Combobox>
                         </Grid.Col>
+                        <Grid.Col span={{ base: 12, xs: 2 }}>
+                            <TextInput
+                                label="Solicitante"
+                                placeholder="Digite o Solicitante"
+                                value={requester}
+                                onChange={(event) => setRequester(event.currentTarget.value)}
+                            />
+                        </Grid.Col>
                     </> :
                         <>
                             <Grid.Col span={{ base: 12, xs: 4 }}>
@@ -379,7 +393,7 @@ export default function EditDraftPage() {
                             <Grid.Col span={{ base: 12, xs: 6 }}>
                                 <ComboDelivery ComboDeliveryData={ComboDeliveryData} deliveryAddress={deliveryAddress} />
                             </Grid.Col>
-                            <Grid.Col span={{ base: 12, xs: 6 }}>
+                            <Grid.Col span={{ base: 12, xs: 3 }}>
                                 <Combobox
                                     store={approverComboBox}
                                     withinPortal={false}
@@ -407,6 +421,14 @@ export default function EditDraftPage() {
                                         <Combobox.Options>{approverOptions}</Combobox.Options>
                                     </Combobox.Dropdown>
                                 </Combobox>
+                            </Grid.Col>
+                            <Grid.Col span={{ base: 12, xs: 3 }}>
+                                <TextInput
+                                    label="Solicitante"
+                                    placeholder="Digite o Solicitante"
+                                    value={requester}
+                                    onChange={(event) => setRequester(event.currentTarget.value)}
+                                />
                             </Grid.Col>
                         </>
                     }

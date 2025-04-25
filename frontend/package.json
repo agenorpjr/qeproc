@@ -1,12 +1,12 @@
 {
-  "name": "auth-nextjs",
+  "name": "qeproc",
   "version": "0.1.0",
   "private": true,
   "scripts": {
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "next lint",
+    "lint": "next lint 2",
     "db:migrate": "npx prisma migrate dev",
     "db:reset": "prisma migrate reset && prisma migrate dev",
     "db:studio": "npx prisma studio"

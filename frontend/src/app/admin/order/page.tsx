@@ -48,8 +48,8 @@ export default function NewOrder() {
         redirect("/")
     }
 
-    if (session?.user?.role === "admin") {
-        redirect("/admin")
+    if (session?.user?.role === "user") {
+        redirect("/user/dashboard")
     }
     const router = useRouter()
     const [companyName, setCompanyName] = useState('')
@@ -236,6 +236,7 @@ export default function NewOrder() {
             const updateValues = await updateDraft(values, draftNumber)
         }
         setEnableSave(false)
+        
     }
 
     const checkApprover = async () => {

@@ -279,7 +279,8 @@ export async function updateDraft(savedata: any, dn: Number) {
             project_id: savedata.project_id,
             delivery_at: savedata.delivery_at,
             draft_status: "enable",
-            approver_id: savedata.approver_id
+            approver_id: savedata.approver_id,
+            requester: savedata.requester
         }
     })
 

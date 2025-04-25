@@ -17,9 +17,6 @@ import './globals.css';
 import { SessionProvider } from 'next-auth/react';
 
 import {
-  useQuery,
-  useMutation,
-  useQueryClient,
   QueryClient,
   QueryClientProvider,
 } from '@tanstack/react-query'
@@ -58,10 +55,6 @@ export default function RootLayout({
           sizes="16x16"
           href="/favicon-16x16.png"
         />
-        {/* <script
-          src="https://cdn.onesignal.com/sdks/web/v16/OneSignalSDK.page.js"
-          defer
-        ></script> */}
         <ColorSchemeScript defaultColorScheme="auto" />
       </head>
       <body>

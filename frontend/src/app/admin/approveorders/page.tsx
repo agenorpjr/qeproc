@@ -7,7 +7,7 @@ import {  getOrdersByApprover, updateOrder } from '@/lib/orders/getOrderData';
 import { redirect, useRouter } from 'next/navigation';
 import { useSession } from 'next-auth/react';
 import dayjs from 'dayjs';
-import { ActionIcon, Box, Button, Card, Pill, Divider, Flex, Grid, Group, Modal, Stack, Title, Text, Tooltip, TextInput, NumberInput, Center } from '@mantine/core';
+import { ActionIcon, Box, Button, Card, Divider, Flex, Grid, Group, Modal, Stack, Title, Text, Tooltip, TextInput } from '@mantine/core';
 
 import classes from './orders.module.css'
 import { IconAdjustments, IconEdit, IconSearch, IconX } from '@tabler/icons-react';
@@ -113,15 +113,6 @@ export default function OrdersApproverPage() {
       approver_id: orderTemp?.approver_id
     })
   }
-
-  // const updateOrders = async () => {
-  //   try {
-  //     const res = await getOrders(session?.user?.id)
-  //     setOrdersData(res)
-  //     const data = sortBy(res, sortStatus.columnAccessor) as Order[];
-  //     setRecords(sortStatus.direction === 'desc' ? data.reverse() : data);
-  //   } catch (err) { }
-  // }
 
   if (status === 'loading') return <Loading />
 

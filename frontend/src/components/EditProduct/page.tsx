@@ -10,15 +10,14 @@ import {
   Grid,
   InputBase,
   Input,
-  Text,
   ActionIcon
 } from '@mantine/core';
 import { notifications } from "@mantine/notifications";
 import { useEffect, useState } from "react"
-import revPath, { addDraftProduct, addProductoOnTable, editDraftProduct, getDraftId, getMeasures, getProducts } from '@/lib/orders/getOrderData';
+import  { addProductoOnTable, editDraftProduct, getMeasures, getProducts } from '@/lib/orders/getOrderData';
 
 import classes from "./EditProduct.module.css"
-import { IconEdit, IconPlus } from '@tabler/icons-react';
+import { IconEdit } from '@tabler/icons-react';
 import Loading from '@/app/loading';
 
 export default function EditProduct({ dataprod, upDataDP }) {

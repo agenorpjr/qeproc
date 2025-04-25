@@ -1,7 +1,7 @@
 services:
   db:
     image: mysql:8.0.41
-    container_name: mysqllocal
+    container_name: mysql
     restart: unless-stopped
     environment:
       MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
@@ -12,5 +12,9 @@ services:
       - "3306:3306"
     volumes:
       - mysql-volume:/var/lib/mysql
+  app:
+    build: .
+    ports:
+      - 3000:3000
 volumes:
   mysql-volume: 

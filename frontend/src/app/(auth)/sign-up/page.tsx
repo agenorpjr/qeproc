@@ -8,12 +8,7 @@ import {
     PasswordInput,
     Stack,
     Title,
-    TextInput,
-    Notification,
-    useCombobox,
-    Combobox,
-    InputBase,
-    Input
+    TextInput
 } from '@mantine/core';
 import { IconInfoCircle } from '@tabler/icons-react';
 import { signUp } from "@/lib/actionSignup";
@@ -22,7 +17,6 @@ import classes from './signup.module.css';
 import { useSession } from 'next-auth/react';
 import { notifications } from '@mantine/notifications';
 import { useState } from 'react';
-import Loading from '@/app/loading';
 
 export default function SignUpPage() {
 

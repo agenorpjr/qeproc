@@ -7,13 +7,12 @@ import { getAllOrders } from '@/lib/orders/getOrderData';
 import { redirect, useRouter } from 'next/navigation';
 import { useSession } from 'next-auth/react';
 import dayjs from 'dayjs';
-import { ActionIcon, Box, Button, Card, Divider, Flex, Grid, Group, Modal, Stack, Title, Text, Tooltip, TextInput, Anchor } from '@mantine/core';
+import { ActionIcon, Box, Button, Card, Divider, Flex, Grid, Group, Modal, Stack, Title, Text, TextInput, Anchor } from '@mantine/core';
 
 import classes from './orders.module.css'
-import { IconAdjustments, IconEdit, IconSearch, IconX } from '@tabler/icons-react';
+import { IconEdit, IconSearch, IconX } from '@tabler/icons-react';
 import { useDisclosure, useDebouncedValue, useMediaQuery } from '@mantine/hooks';
 import Loading from '@/app/loading';
-import actionCopyOrder from '@/lib/actionCopyOrder';
 import clsx from 'clsx';
 
 export type Order = {
@@ -58,8 +57,6 @@ export default function OrdersPage() {
   const [companyQuery] = useDebouncedValue(companyName, 200)
   const [orderNumber, setOrderNumber] = useState('')
   const [orderNumberQuery] = useDebouncedValue(orderNumber, 200)
-
-  const tablet_match = useMediaQuery('(max-width: 768px)');
 
   useEffect(() => {
     const orders = async () => {
@@ -339,7 +336,6 @@ export default function OrdersPage() {
           <Grid.Col span={4}>
             <Button fullWidth size="md" color='red'
               onClick={() => {
-                deleteOrder(draftTemp)
                 setOrderTemp(null)
                 close()
               }}

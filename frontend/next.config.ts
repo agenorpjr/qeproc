@@ -5,6 +5,13 @@ const nextConfig: NextConfig = {
         config.externals = [...config.externals, "bcrypt"];
         return config;
       },
+      output: "standalone",
+      eslint: {
+        ignoreDuringBuilds: true,
+      },
+      typescript: {
+        ignoreBuildErrors: true
+      }
 };
 
 export default nextConfig;

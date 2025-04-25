@@ -162,6 +162,7 @@ model drafts {
   delivery_at         DateTime?             @db.DateTime()
   draft_status        String                @default("disable")
   approver_id         String
+  requester           String?
   draft_products_list draft_products_list[]
   companies           companies?            @relation(fields: [company_id], references: [company_id], onDelete: NoAction, onUpdate: NoAction, map: "d_company_id")
   User                User                  @relation(fields: [user_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "d_user_id")
@@ -195,6 +196,7 @@ model orders {
   delivery_at         DateTime              @db.DateTime(0)
   purchaser           String?
   status              String?               @default("Em Aprovação")
+  requester           String?
   companies           companies             @relation(fields: [company_id], references: [company_id], onDelete: NoAction, onUpdate: NoAction, map: "o_company_id")
   User                User                  @relation(fields: [user_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "o_user_id")
   cost_centers        cost_centers?         @relation(fields: [cost_center_id], references: [cost_center_id], onDelete: NoAction, onUpdate: NoAction, map: "o_cost_center_id")

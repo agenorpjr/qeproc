@@ -1,5 +1,6 @@
 "use client";
-import { Button } from "@/components/ui/button";
+
+import { Button } from "@mantine/core";
 import { signOut } from "next-auth/react";
 
 const SignOut = () => {
@@ -9,7 +10,7 @@ const SignOut = () => {
 
   return (
     <div className="flex justify-center">
-      <Button variant="destructive" onClick={handleSignOut}>
+      <Button variant="filled" onClick={handleSignOut}>
         Sign Out
       </Button>
     </div>

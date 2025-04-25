@@ -1,25 +1,21 @@
 'use client';
 
 import {
-  Button,
   Card,
   Container,
   Flex,
   Grid,
-  Group,
-  Paper,
   PaperProps,
   Stack,
   Text,
   Title,
 } from '@mantine/core';
 import { IconBasket, IconBasketCheck, IconBasketCog, IconBasketDollar, IconBasketExclamation, IconBasketOff, IconBasketQuestion, IconBasketShare, IconBasketStar, IconChevronRight, IconShoppingBagCheck, IconShoppingBagExclamation } from '@tabler/icons-react';
-import Link from 'next/link';
 
 import {
   PageHeader,
 } from '@/components';
-import { PATH_TASKS } from '@/routes';
+
 import { useSession } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
 import classes from './dashboard.module.css'

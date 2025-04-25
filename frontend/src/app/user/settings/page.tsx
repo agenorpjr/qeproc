@@ -1,10 +1,7 @@
 'use client'
-import { IconArrowLeft } from '@tabler/icons-react';
+
 import {
-    Anchor,
-    Box,
     Button,
-    Center,
     Container,
     Group,
     Paper,

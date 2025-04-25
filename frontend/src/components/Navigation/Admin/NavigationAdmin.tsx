@@ -3,8 +3,11 @@ import { useEffect } from 'react';
 import { ActionIcon, Box, Flex, Group, ScrollArea, Text } from '@mantine/core';
 import { useMediaQuery } from '@mantine/hooks';
 import {
+  IconBasketCog,
+  IconBasketSearch,
   IconBriefcase,
   IconCalendar,
+  IconClipboardPlus,
   IconKeyFilled,
   IconLayoutDashboardFilled,
   IconListDetails,
@@ -27,11 +30,15 @@ const mockdata = [
     links: [
       { label: 'Dashboard', icon: IconLayoutDashboardFilled, link: '/admin/dashboard' },
       { label: 'Requisições para Aprovar', icon: IconShoppingBagExclamation, link: "/admin/approveorders"},
-      { label: 'Requisições', icon: IconShoppingBagCheck, link: "/admin/orders"},
+      { label: 'Requisições', icon: IconBasketSearch, link: "/admin/orders"},
       { label: 'Novo Usuário', icon: IconUserPlus, link: "/sign-up" },
       { label: 'Gerenciar Compradores', icon: IconBriefcase, link: "/admin/purchaser" },
       { label: 'Gerenciar Aprovadores', icon: IconThumbUp, link: "/admin/approver" },
       { label: 'Trocar Senha', icon: IconKeyFilled, link: '/admin/settings' },
+      { label: 'Minhas Requisições', icon: IconShoppingBagCheck, link: "/admin/myorders"},
+      { label: 'Minhas Solicitações', icon: IconBasketCog, link: "/admin/drafts" },
+      { label: 'Nova Solicitação', icon: IconClipboardPlus, link: "/admin/order" },
+
     ],
   }
 ];

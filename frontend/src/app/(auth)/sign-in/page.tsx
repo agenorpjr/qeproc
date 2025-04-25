@@ -30,6 +30,10 @@ export default async function SigninPage() {
 
     const session = await auth()
 
+    if (session) {
+        redirect('/')
+    }
+
     return (
         <div className={classes.wrapper}>
             <form action={action}>

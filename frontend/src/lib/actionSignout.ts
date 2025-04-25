@@ -4,11 +4,13 @@ import { signOut } from "./auth"
 
 export default async function SignOutF() {
     try {
-        await signOut()
+        await signOut().then(() => {
+            redirect('/sign-in')
+        })
     } catch (erro) {
 
     } finally {
-        redirect("/")
+        redirect("/sign-in")
     }
 
 }

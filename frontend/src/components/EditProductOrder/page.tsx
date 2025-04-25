@@ -21,7 +21,7 @@ import { useEffect, useState } from "react"
 import { addProductoOnTable, addSupplier, getMeasures, getProducts, getSupplierByName, getSuppliers, updateOrderProductListByAdmin } from '@/lib/orders/getOrderData';
 
 import classes from "./EditProductOrder.module.css"
-import { IconEdit, IconPlus } from '@tabler/icons-react';
+import { IconEdit } from '@tabler/icons-react';
 import Loading from '@/app/loading';
 import { DatePickerInput } from '@mantine/dates';
 
