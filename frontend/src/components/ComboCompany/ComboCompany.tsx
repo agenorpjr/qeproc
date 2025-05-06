@@ -98,7 +98,7 @@ export default function ComboCompany({ ComboCompanyData, companyName}) {
                     onChange={(event) => setSearch(event.currentTarget.value)}
                     placeholder="Buscar Empresa"
                 />
-                <Combobox.Options>
+                <Combobox.Options mah={200} style={{ overflowY: 'auto' }}>
                     {optionsCompanyCombo.length > 0 ? optionsCompanyCombo : <Combobox.Empty>Não Encontrado</Combobox.Empty>}
                 </Combobox.Options>
             </Combobox.Dropdown>

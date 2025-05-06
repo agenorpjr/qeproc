@@ -8,7 +8,9 @@ import {
     PasswordInput,
     Stack,
     Title,
-    TextInput
+    TextInput,
+    Grid,
+    Flex
 } from '@mantine/core';
 import { IconInfoCircle } from '@tabler/icons-react';
 import { signUp } from "@/lib/actionSignup";
@@ -17,6 +19,7 @@ import classes from './signup.module.css';
 import { useSession } from 'next-auth/react';
 import { notifications } from '@mantine/notifications';
 import { useState } from 'react';
+import { set } from 'lodash';
 
 export default function SignUpPage() {
 
@@ -78,7 +81,7 @@ export default function SignUpPage() {
         }
         try {
             let rolesave
-            if(role === 'approver' || role === 'admin') {
+            if (role === 'approver' || role === 'admin') {
                 rolesave = 1
             } else {
                 rolesave = 0
@@ -92,7 +95,7 @@ export default function SignUpPage() {
                 approver: rolesave
             }
             const sup = await signUp(dataSignUp)
-            
+
         } catch (err) {
             notifications.show({
                 title: "Registro de Usuário",
@@ -108,78 +111,98 @@ export default function SignUpPage() {
                 position: 'top-center',
                 color: 'indigo',
             })
-
+            resetFields()
+            redirect('/admin/dashboard')
+            
         }
 
     }
+
+    function resetFields() {
+        setName('')
+        setEmail('')
+        setPassword('')
+        setPassword2('')
+        setRole('')
+    }
     const icon = <IconInfoCircle />;
     return (
-        <div style={{ width: '100vw', height: '100vh' }}>
-            <Center style={{ width: '100vw', height: '100vh' }} bg="var(--mantine-color-gray-light)">
-                <Paper withBorder p="lg" radius="md" shadow="md">
-                    <Title order={2} className={classes.title} ta="center" mt="md" mb={50}>
-                        Sistema de Compras Quanta - Registro de Usuário
-                    </Title>
+        <>
+            <div style={{ maxWidth: '99vw', height: '98vh', backgroundColor: "#F0FFFF" }}>
+                <Grid>
+                    <Grid.Col span={12}>
+                        <Flex  justify='center' mt={20} mb={20}>
+                            <Button size='sm' variant='outline' onClick={() => redirect("/admin/dashboard")}>Voltar</Button>
+                        </Flex>
+                    </Grid.Col>
+                    <Grid.Col span={12}>
+                    <Center>
+                        <Paper withBorder p="lg" radius="md" shadow="md">
+                            <Title order={2} className={classes.title} ta="center" mt="md" mb={20}>
+                                Sistema de Compras Quanta - Registro de Usuário
+                            </Title>
 
-                    <div>
-                        <Stack>
-                            <TextInput
-                                required
-                                label="Nome"
-                                placeholder="Nome do Usuário"
-                                radius="md"
-                                onChange={(event) => setName(event.currentTarget.value)}
-                            />
-                            <TextInput
-                                required
-                                label="Email"
-                                placeholder="email@quanta.works"
-                                name="email"
-                                radius="md"
-                                onChange={(event) => setEmail(event.currentTarget.value)}
-                            />
+                            <div>
+                                <Stack>
+                                    <TextInput
+                                        required
+                                        label="Nome"
+                                        placeholder="Nome do Usuário"
+                                        radius="md"
+                                        onChange={(event) => setName(event.currentTarget.value)}
+                                    />
+                                    <TextInput
+                                        required
+                                        label="Email"
+                                        placeholder="email@quanta.works"
+                                        name="email"
+                                        radius="md"
+                                        onChange={(event) => setEmail(event.currentTarget.value)}
+                                    />
 
-                            <PasswordInput
-                                required
-                                label="Digite uma Senha de no mínimo 6 digitos"
-                                placeholder="Sua Senha"
-                                name="password"
-                                radius="md"
-                                onChange={(event) => setPassword(event.currentTarget.value)}
-                            />
+                                    <PasswordInput
+                                        required
+                                        label="Digite uma Senha de no mínimo 6 digitos"
+                                        placeholder="Sua Senha"
+                                        name="password"
+                                        radius="md"
+                                        onChange={(event) => setPassword(event.currentTarget.value)}
+                                    />
 
-                            <PasswordInput
-                                required
-                                label="Repita a Senha"
-                                placeholder="Repita a Senha"
-                                radius="md"
-                                onChange={(event) => setPassword2(event.currentTarget.value)}
-                            />
+                                    <PasswordInput
+                                        required
+                                        label="Repita a Senha"
+                                        placeholder="Repita a Senha"
+                                        radius="md"
+                                        onChange={(event) => setPassword2(event.currentTarget.value)}
+                                    />
 
-                            <NativeSelect
-                                label="Regra de Usuário"
-                                required
-                                value={role}
-                                data={[
-                                    { label: 'Usuário', value: "user" },
-                                    { label: 'Administrador', value: "admin" },
-                                    { label: 'Aprovador', value: "approver" }
-                                ]} 
-                                onChange={(e) => setRole(e.currentTarget.value)}
-                                />
+                                    <NativeSelect
+                                        label="Regra de Usuário"
+                                        required
+                                        value={role}
+                                        data={[
+                                            { label: 'Usuário', value: "user" },
+                                            { label: 'Administrador', value: "admin" },
+                                            { label: 'Aprovador', value: "approver" }
+                                        ]}
+                                        onChange={(e) => setRole(e.currentTarget.value)}
+                                    />
 
-                        </Stack>
+                                </Stack>
 
-                        <Group justify="space-between" mt="xl">
+                                <Group justify="space-between" mt="xl">
 
-                            <Button onClick={createUser} radius="xl">
-                                Registrar
-                            </Button>
-                        </Group>
-                    </div>
-                </Paper>
-            </Center>
-        </div>
-
+                                    <Button onClick={createUser} radius="xl">
+                                        Registrar
+                                    </Button>
+                                </Group>
+                            </div>
+                        </Paper>
+                    </Center>
+                    </Grid.Col>
+                </Grid>
+            </div>
+        </>
     );
 }

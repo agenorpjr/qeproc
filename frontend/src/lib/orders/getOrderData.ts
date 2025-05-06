@@ -13,12 +13,12 @@ export async function getUserById(userId: string) {
                 id: userId
             }
         })
-        
+
         return user
     }
 
     return ""
-    
+
 }
 
 export async function getUserByName(username: string) {
@@ -150,6 +150,17 @@ export async function getProducts() {
 }
 
 
+export async function getProductByName(name: string) {
+    const prod = await db.products.findFirst({
+        where: {
+            description: name
+        }
+    })
+
+    return prod?.product_id
+}
+
+
 
 
 export async function addProductoOnTable(data: any) {
@@ -242,7 +253,7 @@ export async function getDraftNumber() {
     } else {
         return "S-0"
     }
-    
+
 }
 
 
@@ -416,6 +427,31 @@ export async function getOrders(user_id: string) {
     const orders = db.orders.findMany({
         where: {
             user_id: user_id
+        },
+        include: {
+            companies: true,
+            order_products_list: {
+                include: {
+                    products: true,
+                    measures: true,
+                    suppliers: true,
+                }
+            },
+            cost_centers: true,
+            projects: true,
+        }
+    })
+    return orders
+}
+
+export async function getOrdersByProd(prod: number) {
+    const orders = db.orders.findMany({
+        where: {
+            order_products_list: {
+                some: {
+                    product_id: prod
+                }
+            }
         },
         include: {
             companies: true,

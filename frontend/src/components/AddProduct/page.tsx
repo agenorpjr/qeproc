@@ -169,7 +169,7 @@ export default function AddProduct({ draftNumber, upDataDP }) {
               />
             </Combobox.Target>
             <Combobox.Dropdown>
-              <Combobox.Options>
+              <Combobox.Options mah={200} style={{ overflowY: 'auto' }}>
                 {optionsProductCombo.length > 0 ? optionsProductCombo : <Combobox.Empty>Descreva o Produto</Combobox.Empty>}</Combobox.Options>
             </Combobox.Dropdown>
           </Combobox>
@@ -212,7 +212,7 @@ export default function AddProduct({ draftNumber, upDataDP }) {
                   </InputBase>
                 </Combobox.Target>
                 <Combobox.Dropdown>
-                  <Combobox.Options>{optionsMeasureCombo}</Combobox.Options>
+                  <Combobox.Options mah={200} style={{ overflowY: 'auto' }}>{optionsMeasureCombo}</Combobox.Options>
                 </Combobox.Dropdown>
               </Combobox>
             </Grid.Col>

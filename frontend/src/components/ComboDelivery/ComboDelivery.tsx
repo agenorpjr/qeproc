@@ -81,7 +81,7 @@ export default function ComboDelivery({ ComboDeliveryData, deliveryAddress }) {
 
             <Combobox.Dropdown>
 
-                <Combobox.Options>
+                <Combobox.Options mah={200} style={{ overflowY: 'auto' }}>
                     {optionsDeliveryCombo.length > 0 ? optionsDeliveryCombo : <Combobox.Empty>Digite o Endereço</Combobox.Empty>}</Combobox.Options>
             </Combobox.Dropdown>
         </Combobox>

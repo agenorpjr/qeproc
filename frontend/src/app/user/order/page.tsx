@@ -377,7 +377,7 @@ export default function NewOrder() {
                                         </InputBase>
                                     </Combobox.Target>
                                     <Combobox.Dropdown>
-                                        <Combobox.Options>{approverOptions}</Combobox.Options>
+                                        <Combobox.Options mah={200} style={{ overflowY: 'auto' }}>{approverOptions}</Combobox.Options>
                                     </Combobox.Dropdown>
                                 </Combobox>
                             </Grid.Col>
@@ -436,7 +436,7 @@ export default function NewOrder() {
                                             </InputBase>
                                         </Combobox.Target>
                                         <Combobox.Dropdown>
-                                            <Combobox.Options>{approverOptions}</Combobox.Options>
+                                            <Combobox.Options mah={200} style={{ overflowY: 'auto' }}>{approverOptions}</Combobox.Options>
                                         </Combobox.Dropdown>
                                     </Combobox>
                                 </Grid.Col>

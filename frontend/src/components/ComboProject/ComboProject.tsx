@@ -72,7 +72,7 @@ export default function ComboProject({ ComboProjectData, projectName }) {
 
             <Combobox.Dropdown>
 
-                <Combobox.Options>
+                <Combobox.Options mah={200} style={{ overflowY: 'auto' }}>
                     {optionsProjectCombo.length > 0 ? optionsProjectCombo : <Combobox.Empty>Digite o Projeto</Combobox.Empty>}</Combobox.Options>
             </Combobox.Dropdown>
         </Combobox>

@@ -97,7 +97,7 @@ export default function ComboCostCenter({ ComboCostCenterData, costCenterName, c
                     onChange={(event) => setSearch(event.currentTarget.value)}
                     placeholder="Buscar Centro de Custo"
                 />
-                <Combobox.Options>
+                <Combobox.Options mah={200} style={{ overflowY: 'auto' }}>
                     {optionsCostCenterCombo.length > 0 ? optionsCostCenterCombo : <Combobox.Empty>Não Encontrado</Combobox.Empty>}
                 </Combobox.Options>
             </Combobox.Dropdown>

@@ -39,7 +39,6 @@ import { DataTable } from "mantine-datatable";
 import EditProduct from "@/components/EditProduct/page";
 import actionSaveOrder from "@/lib/actionSaveOrder";
 
-
 export default function NewOrder() {
 
     const { data: session } = useSession()
@@ -51,6 +50,8 @@ export default function NewOrder() {
     if (session?.user?.role === "user") {
         redirect("/user/dashboard")
     }
+
+
     const router = useRouter()
     const [companyName, setCompanyName] = useState('')
     const [companyId, setCompanyId] = useState(0)
@@ -236,7 +237,7 @@ export default function NewOrder() {
             const updateValues = await updateDraft(values, draftNumber)
         }
         setEnableSave(false)
-        
+
     }
 
     const checkApprover = async () => {
@@ -378,7 +379,7 @@ export default function NewOrder() {
                                         </InputBase>
                                     </Combobox.Target>
                                     <Combobox.Dropdown>
-                                        <Combobox.Options>{approverOptions}</Combobox.Options>
+                                        <Combobox.Options mah={200} style={{ overflowY: 'auto' }}>{approverOptions}</Combobox.Options>
                                     </Combobox.Dropdown>
                                 </Combobox>
                             </Grid.Col>
@@ -437,7 +438,7 @@ export default function NewOrder() {
                                             </InputBase>
                                         </Combobox.Target>
                                         <Combobox.Dropdown>
-                                            <Combobox.Options>{approverOptions}</Combobox.Options>
+                                            <Combobox.Options mah={200} style={{ overflowY: 'auto' }}>{approverOptions}</Combobox.Options>
                                         </Combobox.Dropdown>
                                     </Combobox>
                                 </Grid.Col>
@@ -464,7 +465,7 @@ export default function NewOrder() {
                                 <AddProduct draftNumber={draftNumber} upDataDP={UpdataDP} />
                             </Flex>
                         </Grid.Col>
-                        <Grid.Col span={12} maw='90vw'>
+                        <Grid.Col span={12} maw='100vw'>
                             <DataTable
                                 columns={[
                                     {
@@ -540,40 +541,40 @@ export default function NewOrder() {
                             />
                         </Grid.Col>
                     </Grid>
-                    <Grid type="container" mt={50}>
-                        <Grid.Col span={{ base: 12, xs: 12 }}>
-                            <Button variant="filled" color="teal.7"
-                                onClick={async () => {
-                                    const sd = await saveDraft()
-                                        .then(() => {
-                                            notifications.show({
-                                                title: "Solicitação",
-                                                message: "Solicitação salva com Sucesso!!!",
-                                                position: 'top-center',
-                                                color: 'indigo',
-                                            })
-                                        })
-                                }
-                                }
-                            >Salvar Solicitação</Button>
-                            {enableSave ? <></> :
-                                <Button ml={20} variant="filled" color="indigo"
+                        <Grid type="container" mt={20}>
+                            <Grid.Col span={{ base: 12, xs: 12 }}>
+                                <Button variant="filled" color="teal.7"
                                     onClick={async () => {
-                                        const so = await saveOrder()
+                                        const sd = await saveDraft()
                                             .then(() => {
                                                 notifications.show({
-                                                    title: "Requisição",
-                                                    message: "Requisição efetuada com Sucesso!!!",
+                                                    title: "Solicitação",
+                                                    message: "Solicitação salva com Sucesso!!!",
                                                     position: 'top-center',
                                                     color: 'indigo',
                                                 })
                                             })
+                                    }
+                                    }
+                                >Salvar Solicitação</Button>
+                                {enableSave ? <></> :
+                                    <Button ml={20} variant="filled" color="indigo"
+                                        onClick={async () => {
+                                            const so = await saveOrder()
+                                                .then(() => {
+                                                    notifications.show({
+                                                        title: "Requisição",
+                                                        message: "Requisição efetuada com Sucesso!!!",
+                                                        position: 'top-center',
+                                                        color: 'indigo',
+                                                    })
+                                                })
 
-                                    }
-                                    }
-                                >Enviar Requisição</Button>}
-                        </Grid.Col>
-                    </Grid>
+                                        }
+                                        }
+                                    >Enviar Requisição</Button>}
+                            </Grid.Col>
+                        </Grid>
                 </Card>
             </Stack >
         )

@@ -51,7 +51,7 @@ const FooterNav = () => {
         href={PATH_GITHUB.org}
         target="_blank"
       >
-        &copy;&nbsp;{new Date().getFullYear()}&nbsp;Sistemas de Compras Quanta
+        &copy;&nbsp;{new Date().getFullYear()}&nbsp;Sistema de Compras Quanta
       </Text>
     </Group>
   );
